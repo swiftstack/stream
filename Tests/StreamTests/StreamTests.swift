@@ -1,4 +1,3 @@
-import Test
 @testable import Stream
 
 class StreamTests: TestCase {
