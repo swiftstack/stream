@@ -2,7 +2,7 @@ public class MemoryStream: Stream {
     var capacity: Int? = nil
     var storage: UnsafeMutableRawPointer
     private(set) var allocated = 0
-    private(set) var offset = 0
+    fileprivate(set) var offset = 0
     var writePosition: Int {
         return offset + count
     }
@@ -36,9 +36,9 @@ public class MemoryStream: Stream {
 
         self.count -= count
         if self.count == 0 {
-            offset = 0
+            self.offset = 0
         } else {
-            offset += count
+            self.offset += count
         }
 
         return count
@@ -77,7 +77,7 @@ public class MemoryStream: Stream {
 
         if let capacity = capacity {
             guard self.count < capacity else {
-                throw StreamError.noSpaceAvailable
+                throw StreamError.full
             }
             available = min(capacity - self.count, count)
             if writePosition + count > capacity {
@@ -92,5 +92,65 @@ public class MemoryStream: Stream {
         }
 
         return available
+    }
+}
+
+extension MemoryStream {
+    @_specialize(Int)
+    @_specialize(Int8)
+    @_specialize(Int16)
+    @_specialize(Int32)
+    @_specialize(Int64)
+    @_specialize(UInt)
+    @_specialize(UInt8)
+    @_specialize(UInt16)
+    @_specialize(UInt32)
+    @_specialize(UInt64)
+    public func write<T>(_ value: T) throws {
+        // ensure we have enough space
+        let size = MemoryLayout<T>.size
+        let available = try ensure(count: size)
+        guard available == size else {
+            throw StreamError.notEnoughSpace
+        }
+        // for the value
+        storage.advanced(by: writePosition)
+            .assumingMemoryBound(to: T.self)
+            .pointee = value
+        count += size
+    }
+
+    @_specialize(Int)
+    @_specialize(Int8)
+    @_specialize(Int16)
+    @_specialize(Int32)
+    @_specialize(Int64)
+    @_specialize(UInt)
+    @_specialize(UInt8)
+    @_specialize(UInt16)
+    @_specialize(UInt32)
+    @_specialize(UInt64)
+    public func read<T>() throws -> T {
+        guard count > 0 else {
+            throw StreamError.eof
+        }
+        // ensure we have enough data
+        let size = MemoryLayout<T>.size
+        guard count >= size else {
+            throw StreamError.insufficientData
+        }
+        // for the value
+        let value = storage.advanced(by: offset)
+            .assumingMemoryBound(to: T.self)
+            .pointee
+
+        count -= size
+        if count == 0 {
+            offset = 0
+        } else {
+            offset += size
+        }
+
+        return value
     }
 }

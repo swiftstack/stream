@@ -181,7 +181,7 @@ class MemoryStreamTests: TestCase {
         assertNoThrow(try stream.write(from: data, count: 4))
 
         assertThrowsError(try stream.write(from: data, count: 4)) { error in
-            assertEqual(error as? StreamError, StreamError.noSpaceAvailable)
+            assertEqual(error as? StreamError, StreamError.full)
         }
     }
 
@@ -194,7 +194,7 @@ class MemoryStreamTests: TestCase {
         assertEqual(written, 2)
 
         assertThrowsError(try stream.write(from: data, count: 4)) { error in
-            assertEqual(error as? StreamError, StreamError.noSpaceAvailable)
+            assertEqual(error as? StreamError, StreamError.full)
         }
     }
 
@@ -210,5 +210,45 @@ class MemoryStreamTests: TestCase {
         let read = try? stream.read(to: &buffer, count: 4)
         assertEqual(read, 4)
         assertEqual(buffer, [2, 3, 4, 1])
+    }
+
+    func testTrivial() {
+        let stream = MemoryStream()
+        var buffer = [UInt8](repeating: 0, count: 8)
+
+        _ = try? stream.write(Int64(0x0102030405060708))
+        let read = try? stream.read(to: &buffer, count: 8)
+        assertEqual(read, 8)
+        assertEqual(buffer, [8, 7, 6, 5, 4, 3, 2, 1])
+
+        assertNoThrow(try stream.write(Int.max))
+        assertEqual(try? stream.read(), Int.max)
+        assertNoThrow(try stream.write(Int8.max))
+        assertEqual(try? stream.read(), Int8.max)
+        assertNoThrow(try stream.write(Int16.max))
+        assertEqual(try? stream.read(), Int16.max)
+        assertNoThrow(try stream.write(Int32.max))
+        assertEqual(try? stream.read(), Int32.max)
+        assertNoThrow(try stream.write(Int64.max))
+        assertEqual(try? stream.read(), Int64.max)
+        assertNoThrow(try stream.write(UInt.max))
+        assertEqual(try? stream.read(), UInt.max)
+        assertNoThrow(try stream.write(UInt8.max))
+        assertEqual(try? stream.read(), UInt8.max)
+        assertNoThrow(try stream.write(UInt16.max))
+        assertEqual(try? stream.read(), UInt16.max)
+        assertNoThrow(try stream.write(UInt32.max))
+        assertEqual(try? stream.read(), UInt32.max)
+        assertNoThrow(try stream.write(UInt64.max))
+        assertEqual(try? stream.read(), UInt64.max)
+
+        assertThrowsError(try stream.read() as Int) { error in
+            assertEqual(error as? StreamError, StreamError.eof)
+        }
+
+        assertNoThrow(try stream.write(UInt32.max))
+        assertThrowsError(try stream.read() as UInt64) { error in
+            assertEqual(error as? StreamError, StreamError.insufficientData)
+        }
     }
 }
