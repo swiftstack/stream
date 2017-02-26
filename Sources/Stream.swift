@@ -12,7 +12,7 @@ public protocol InputStream {
 }
 
 public protocol OutputStream {
-    func write(from buffer: UnsafeRawPointer, count: Int) throws -> Int
+    func write(_ bytes: UnsafeRawPointer, count: Int) throws -> Int
 }
 
 extension InputStream {
@@ -22,7 +22,7 @@ extension InputStream {
 }
 
 extension OutputStream {
-    public func write(from buffer: UnsafeRawPointer, offset: Int, count: Int) throws -> Int {
-        return try write(from: buffer.advanced(by: offset), count: count)
+    public func write(_ bytes: UnsafeRawPointer, offset: Int, count: Int) throws -> Int {
+        return try write(bytes.advanced(by: offset), count: count)
     }
 }

@@ -44,14 +44,14 @@ public class MemoryStream: Stream {
         return count
     }
 
-    public func write(from buffer: UnsafeRawPointer, count: Int) throws -> Int {
+    public func write(_ bytes: UnsafeRawPointer, count: Int) throws -> Int {
         guard count > 0 else {
             return 0
         }
 
         let available = try ensure(count: count)
         storage.advanced(by: writePosition)
-            .copyBytes(from: buffer, count: available)
+            .copyBytes(from: bytes, count: available)
         self.count += available
         return available
     }
