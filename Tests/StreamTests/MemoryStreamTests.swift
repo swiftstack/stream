@@ -113,7 +113,7 @@ class MemoryStreamTests: TestCase {
     func testInitialSize() {
         let stream = MemoryStream()
         assertEqual(stream.allocated, 8)
-        assertEqual(stream.start, 0)
+        assertEqual(stream.offset, 0)
         assertEqual(stream.count, 0)
     }
 
@@ -123,26 +123,26 @@ class MemoryStreamTests: TestCase {
 
         _ = try? stream.write(from: data, count: data.count)
         assertEqual(stream.allocated, 8)
-        assertEqual(stream.start, 0)
+        assertEqual(stream.offset, 0)
         assertEqual(stream.count, 8)
 
         var buffer = [UInt8](repeating: 0, count: 6)
         _ = try? stream.read(to: &buffer, count: buffer.count)
         assertEqual(buffer, [1, 2, 3, 4, 5, 6])
         assertEqual(stream.allocated, 8)
-        assertEqual(stream.start, 6)
+        assertEqual(stream.offset, 6)
         assertEqual(stream.count, 2)
 
         _ = try? stream.write(from: data, offset: 4, count: 2)
         assertEqual(stream.allocated, 8)
-        assertEqual(stream.start, 0)
+        assertEqual(stream.offset, 0)
         assertEqual(stream.count, 4)
 
         buffer = [UInt8](repeating: 0, count: 4)
         _ = try? stream.read(to: &buffer, count: buffer.count)
         assertEqual(buffer, [7, 8, 5, 6])
         assertEqual(stream.allocated, 8)
-        assertEqual(stream.start, 0)
+        assertEqual(stream.offset, 0)
         assertEqual(stream.count, 0)
     }
 
@@ -152,19 +152,26 @@ class MemoryStreamTests: TestCase {
 
         _ = try? stream.write(from: data, count: data.count)
         assertEqual(stream.allocated, 8)
-        assertEqual(stream.start, 0)
+        assertEqual(stream.offset, 0)
         assertEqual(stream.count, 8)
 
-        _ = try? stream.write(from: data, count: data.count)
-        assertEqual(stream.allocated, 32)
-        assertEqual(stream.start, 0)
-        assertEqual(stream.count, 16)
-
-        var buffer = [UInt8](repeating: 0, count: 16)
+        var buffer = [UInt8](repeating: 0, count: 3)
         _ = try? stream.read(to: &buffer, count: buffer.count)
-        assertEqual(buffer, [1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8])
-        assertEqual(stream.allocated, 32)
-        assertEqual(stream.start, 0)
+        assertEqual(buffer, [1, 2, 3])
+        assertEqual(stream.allocated, 8)
+        assertEqual(stream.offset, 3)
+        assertEqual(stream.count, 5)
+
+        _ = try? stream.write(from: data, count: data.count)
+        assertEqual(stream.allocated, 26)
+        assertEqual(stream.offset, 0)
+        assertEqual(stream.count, 13)
+
+        buffer = [UInt8](repeating: 0, count: 13)
+        _ = try? stream.read(to: &buffer, count: buffer.count)
+        assertEqual(buffer, [4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8])
+        assertEqual(stream.allocated, 26)
+        assertEqual(stream.offset, 0)
         assertEqual(stream.count, 0)
     }
 

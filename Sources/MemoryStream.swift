@@ -1,21 +1,29 @@
 public class MemoryStream: Stream {
     var capacity: Int? = nil
-    var storage: UnsafeMutablePointer<UInt8>
-    var allocated = 0
-    var count = 0
-    var start = 0
-    var end: Int {
-        return start + count
+    var storage: UnsafeMutableRawPointer
+    private(set) var allocated = 0
+    private(set) var offset = 0
+    var writePosition: Int {
+        return offset + count
     }
 
-    public init() {
-        storage = UnsafeMutablePointer<UInt8>.allocate(capacity: 8)
-        allocated = 8
+    public fileprivate(set) var count = 0
+
+    /// Expandable stream
+    public init(reservingCapacity count: Int = 8) {
+        self.allocated = count
+        self.storage = UnsafeMutableRawPointer.allocate(bytes: count, alignedTo: 0)
     }
 
+    /// Non-resizable stream
     public init(capacity: Int) {
         self.capacity = capacity
-        storage = UnsafeMutablePointer<UInt8>.allocate(capacity: capacity)
+        self.allocated = capacity
+        self.storage = UnsafeMutableRawPointer.allocate(bytes: capacity, alignedTo: 0)
+    }
+
+    deinit {
+        storage.deallocate(bytes: allocated, alignedTo: 0)
     }
 
     public func read(to buffer: UnsafeMutableRawPointer, count: Int) throws -> Int {
@@ -24,51 +32,58 @@ public class MemoryStream: Stream {
             return 0
         }
 
-        buffer.initializeMemory(
-            as: UInt8.self,
-            from: storage.advanced(by: start),
-            count: count)
+        buffer.copyBytes(from: storage.advanced(by: offset), count: count)
 
         self.count -= count
         if self.count == 0 {
-            start = 0
+            offset = 0
         } else {
-            start += count
+            offset += count
         }
 
         return count
     }
 
+    public func write(from buffer: UnsafeRawPointer, count: Int) throws -> Int {
+        guard count > 0 else {
+            return 0
+        }
+
+        let available = try ensure(count: count)
+        storage.advanced(by: writePosition)
+            .copyBytes(from: buffer, count: available)
+        self.count += available
+        return available
+    }
+
     fileprivate func shift() {
-        storage.moveInitialize(from: storage.advanced(by: start), count: self.count)
-        self.start = 0
+        storage.copyBytes(from: storage.advanced(by: offset), count: count)
+        offset = 0
     }
 
     fileprivate func reallocate(count: Int) {
-        let storage = UnsafeMutablePointer<UInt8>.allocate(capacity: count)
+        let storage = UnsafeMutableRawPointer.allocate(bytes: count, alignedTo: 0)
         if self.count > 0 {
-            storage.moveInitialize(from: self.storage, count: self.count)
+            storage.copyBytes(from: self.storage.advanced(by: offset), count: self.count)
+            offset = 0
         }
-        self.storage.deallocate(capacity: self.allocated)
+        self.storage.deallocate(bytes: self.allocated, alignedTo: 0)
         self.storage = storage
         self.allocated = count
     }
 
-    public func write(from buffer: UnsafeRawPointer, count: Int) throws -> Int {
-        var count = count
-        guard count > 0 else {
-            return 0
-        }
+    fileprivate func ensure(count: Int) throws -> Int {
+        var available = count
 
         if let capacity = capacity {
             guard self.count < capacity else {
                 throw StreamError.noSpaceAvailable
             }
-            count = min(capacity - self.count, count)
-            if end + count > capacity {
+            available = min(capacity - self.count, count)
+            if writePosition + count > capacity {
                 shift()
             }
-        } else if end + count > allocated {
+        } else if writePosition + count > allocated {
             if self.count + count <= allocated / 2 {
                 shift()
             } else {
@@ -76,13 +91,6 @@ public class MemoryStream: Stream {
             }
         }
 
-        storage.advanced(by: start + self.count)
-            .initialize(
-                from: buffer.assumingMemoryBound(to: UInt8.self),
-                count: count)
-
-        self.count += count
-
-        return count
+        return available
     }
 }
