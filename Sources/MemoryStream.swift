@@ -106,7 +106,7 @@ extension MemoryStream {
     @_specialize(UInt16)
     @_specialize(UInt32)
     @_specialize(UInt64)
-    public func write<T>(_ value: T) throws {
+    public func write<T: Integer>(_ value: T) throws {
         // ensure we have enough space
         let size = MemoryLayout<T>.size
         let available = try ensure(count: size)
@@ -130,7 +130,7 @@ extension MemoryStream {
     @_specialize(UInt16)
     @_specialize(UInt32)
     @_specialize(UInt64)
-    public func read<T>() throws -> T {
+    public func read<T: Integer>() throws -> T {
         guard count > 0 else {
             throw StreamError.eof
         }
