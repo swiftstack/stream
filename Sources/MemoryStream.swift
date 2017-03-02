@@ -9,6 +9,14 @@ public class MemoryStream: Stream {
 
     public fileprivate(set) var count = 0
 
+    /// Valid until next read/write
+    public var buffer: UnsafeRawBufferPointer {
+        return UnsafeRawBufferPointer(
+            start: storage.advanced(by: offset),
+            count: count
+        )
+    }
+
     /// Expandable stream
     public init(reservingCapacity count: Int = 8) {
         self.allocated = count
