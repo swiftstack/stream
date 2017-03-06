@@ -119,7 +119,7 @@ public final class MemoryStream: Stream, Seekable {
             }
             var size = 256
             while endIndex > size {
-                size *= 2
+                size <<= 1
             }
             reallocate(count: size)
         }
