@@ -1,105 +1,137 @@
-public class MemoryStream: Stream {
-    var capacity: Int? = nil
-    var storage: UnsafeMutableRawPointer
-    private(set) var allocated = 0
-    fileprivate(set) var offset = 0
-    var writePosition: Int {
-        return offset + count
+public final class MemoryStream: Stream, Seekable {
+    var storage: UnsafeMutableRawBufferPointer
+    let expandable: Bool
+
+    public private(set) var position = 0
+    public private(set) var endIndex = 0
+
+    public var count: Int {
+        return endIndex
     }
 
-    public fileprivate(set) var count = 0
+    public var remain: Int {
+        return endIndex - position
+    }
 
-    /// Valid until next read/write
+    public var allocated: Int {
+        return storage.count
+    }
+
+    public var isEOF: Bool {
+        return position == endIndex
+    }
+
+    /// Valid until next reallocate
     public var buffer: UnsafeRawBufferPointer {
-        return UnsafeRawBufferPointer(
-            start: storage.advanced(by: offset),
-            count: count
-        )
+        return UnsafeRawBufferPointer(storage)
     }
 
     /// Expandable stream
-    public init(reservingCapacity count: Int = 8) {
-        self.allocated = count
-        self.storage = UnsafeMutableRawPointer.allocate(bytes: count, alignedTo: 0)
+    public init() {
+        self.expandable = true
+        self.storage = UnsafeMutableRawBufferPointer(start: nil, count: 0)
+    }
+
+    /// Expandable stream with reserved capacity
+    public init(reservingCapacity count: Int) {
+        self.expandable = true
+        self.storage = UnsafeMutableRawBufferPointer(
+            start: UnsafeMutableRawPointer.allocate(
+                bytes: count,
+                alignedTo: MemoryLayout<UInt>.alignment),
+            count: count)
     }
 
     /// Non-resizable stream
     public init(capacity: Int) {
-        self.capacity = capacity
-        self.allocated = capacity
-        self.storage = UnsafeMutableRawPointer.allocate(bytes: capacity, alignedTo: 0)
+        self.expandable = false
+        self.storage = UnsafeMutableRawBufferPointer(
+            start: UnsafeMutableRawPointer.allocate(
+                bytes: capacity,
+                alignedTo: MemoryLayout<UInt>.alignment),
+            count: capacity)
     }
 
     deinit {
-        storage.deallocate(bytes: allocated, alignedTo: 0)
+        storage.deallocate()
     }
 
-    public func read(to buffer: UnsafeMutableRawPointer, count: Int) throws -> Int {
-        let count = min(self.count, count)
-        guard count > 0 else {
+    public func seek(to offset: Int, from origin: SeekOrigin) throws {
+        var position: Int
+
+        switch origin {
+        case .begin: position = offset
+        case .current: position = self.position + offset
+        case .end: position = self.endIndex + offset
+        }
+
+        switch position {
+        case 0...endIndex: self.position = position
+        default: throw StreamError.invalidSeekOffset
+        }
+    }
+
+    public func read(_ maxLength: Int) -> UnsafeRawBufferPointer {
+        return try! read(upTo: Swift.min(remain, maxLength))
+    }
+
+    public func read(upTo end: Int) throws -> UnsafeRawBufferPointer {
+        guard remain >= end else {
+            throw StreamError.insufficientData
+        }
+        position += end
+        return UnsafeRawBufferPointer(storage[position-end..<position])
+    }
+
+    public func read(to buffer: UnsafeMutableRawBufferPointer) throws -> Int {
+        let bytes = read(buffer.count)
+        guard bytes.count > 0 else {
             return 0
         }
-
-        buffer.copyBytes(from: storage.advanced(by: offset), count: count)
-
-        self.count -= count
-        if self.count == 0 {
-            self.offset = 0
-        } else {
-            self.offset += count
-        }
-
-        return count
+        buffer.copyBytes(from: bytes)
+        return bytes.count
     }
 
-    public func write(_ bytes: UnsafeRawPointer, count: Int) throws -> Int {
-        guard count > 0 else {
+    public func write(_ bytes: UnsafeRawBufferPointer) throws -> Int {
+        guard bytes.count > 0 else {
             return 0
         }
-
-        let available = try ensure(count: count)
-        storage.advanced(by: writePosition)
-            .copyBytes(from: bytes, count: available)
-        self.count += available
-        return available
-    }
-
-    fileprivate func shift() {
-        storage.copyBytes(from: storage.advanced(by: offset), count: count)
-        offset = 0
+        let buffer = try consumeBuffer(count: bytes.count)
+        buffer.copyBytes(from: bytes)
+        return bytes.count
     }
 
     fileprivate func reallocate(count: Int) {
-        let storage = UnsafeMutableRawPointer.allocate(bytes: count, alignedTo: 0)
-        if self.count > 0 {
-            storage.copyBytes(from: self.storage.advanced(by: offset), count: self.count)
-            offset = 0
-        }
-        self.storage.deallocate(bytes: self.allocated, alignedTo: 0)
+        let storage = UnsafeMutableRawBufferPointer(
+            start: UnsafeMutableRawPointer.allocate(bytes: count, alignedTo: 8),
+            count: count)
+
+        storage.copyBytes(from: self.storage)
+        self.storage.deallocate()
         self.storage = storage
-        self.allocated = count
     }
 
-    fileprivate func ensure(count: Int) throws -> Int {
-        var available = count
-
-        if let capacity = capacity {
-            guard self.count < capacity else {
-                throw StreamError.full
+    fileprivate func consumeBuffer(count: Int) throws -> UnsafeMutableRawBufferPointer {
+        let endIndex = position + count
+        if _slowPath(endIndex > storage.count) {
+            guard expandable else {
+                throw StreamError.notEnoughSpace
             }
-            available = min(capacity - self.count, count)
-            if writePosition + count > capacity {
-                shift()
+            var size = 256
+            while endIndex > size {
+                size *= 2
             }
-        } else if writePosition + count > allocated {
-            if self.count + count <= allocated / 2 {
-                shift()
-            } else {
-                reallocate(count: (self.count + count) * 2)
-            }
+            reallocate(count: size)
         }
 
-        return available
+        let buffer = storage[position..<endIndex]
+
+        position = endIndex
+        if position > self.endIndex {
+            self.endIndex = position
+        }
+
+        return buffer
     }
 }
 
@@ -115,17 +147,8 @@ extension MemoryStream {
     @_specialize(UInt32)
     @_specialize(UInt64)
     public func write<T: Integer>(_ value: T) throws {
-        // ensure we have enough space
-        let size = MemoryLayout<T>.size
-        let available = try ensure(count: size)
-        guard available == size else {
-            throw StreamError.notEnoughSpace
-        }
-        // for the value
-        storage.advanced(by: writePosition)
-            .assumingMemoryBound(to: T.self)
-            .pointee = value
-        count += size
+        let buffer = try consumeBuffer(count: MemoryLayout<T>.size)
+        buffer.baseAddress!.assumingMemoryBound(to: T.self).pointee = value
     }
 
     @_specialize(Int)
@@ -139,26 +162,7 @@ extension MemoryStream {
     @_specialize(UInt32)
     @_specialize(UInt64)
     public func read<T: Integer>() throws -> T {
-        guard count > 0 else {
-            throw StreamError.eof
-        }
-        // ensure we have enough data
-        let size = MemoryLayout<T>.size
-        guard count >= size else {
-            throw StreamError.insufficientData
-        }
-        // for the value
-        let value = storage.advanced(by: offset)
-            .assumingMemoryBound(to: T.self)
-            .pointee
-
-        count -= size
-        if count == 0 {
-            offset = 0
-        } else {
-            offset += size
-        }
-
-        return value
+        let buffer = try read(upTo: MemoryLayout<T>.size)
+        return buffer.baseAddress!.assumingMemoryBound(to: T.self).pointee
     }
 }

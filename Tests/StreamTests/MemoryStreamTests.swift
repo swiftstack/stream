@@ -16,6 +16,13 @@ class MemoryStreamTests: TestCase {
         assertNotNil(stream)
     }
 
+    func testInitialSize() {
+        let stream = MemoryStream()
+        assertEqual(stream.allocated, 0)
+        assertEqual(stream.position, 0)
+        assertEqual(stream.remain, 0)
+    }
+
     func testWriteEmpty() {
         let stream = MemoryStream()
         let buffer = [UInt8]()
@@ -36,180 +43,161 @@ class MemoryStreamTests: TestCase {
         assertEqual(read, 0)
     }
 
+    func testSeek() {
+        let stream = MemoryStream()
+        assertNotNil(stream as Seekable)
+        assertEqual(stream.position, 0)
+        assertEqual(stream.remain, 0)
+        assertEqual(stream.count, 0)
+
+        _ = try! stream.write([1, 2, 3, 4])
+        assertEqual(stream.position, 4)
+        assertEqual(stream.remain, 0)
+        assertEqual(stream.count, 4)
+
+        assertNoThrow(try stream.seek(to: 1, from: .begin))
+        assertEqual(stream.position, 1)
+        assertEqual(stream.remain, 3)
+        assertEqual(stream.count, 4)
+
+        assertNoThrow(try stream.seek(to: 2, from: .current))
+        assertEqual(stream.position, 3)
+        assertEqual(stream.remain, 1)
+        assertEqual(stream.count, 4)
+
+        assertNoThrow(try stream.seek(to: -4, from: .end))
+        assertEqual(stream.position, 0)
+        assertEqual(stream.remain, 4)
+        assertEqual(stream.count, 4)
+
+        assertThrowsError(try stream.seek(to: -1, from: .begin)) { error in
+            assertEqual(error as? StreamError, StreamError.invalidSeekOffset)
+        }
+
+        assertThrowsError(try stream.seek(to: 5, from: .begin)) { error in
+            assertEqual(error as? StreamError, StreamError.invalidSeekOffset)
+        }
+
+        assertThrowsError(try stream.seek(to: -1, from: .current)) { error in
+            assertEqual(error as? StreamError, StreamError.invalidSeekOffset)
+        }
+
+        assertThrowsError(try stream.seek(to: 5, from: .current)) { error in
+            assertEqual(error as? StreamError, StreamError.invalidSeekOffset)
+        }
+
+        assertThrowsError(try stream.seek(to: 1, from: .end)) { error in
+            assertEqual(error as? StreamError, StreamError.invalidSeekOffset)
+        }
+
+        assertThrowsError(try stream.seek(to: -5, from: .end)) { error in
+            assertEqual(error as? StreamError, StreamError.invalidSeekOffset)
+        }
+    }
+
     func testWrite() {
         let stream = MemoryStream()
         let data: [UInt8] = [1, 2, 3, 4]
 
         let written = try? stream.write(data, count: 4)
         assertEqual(written, 4)
+
+        var buffer = [UInt8](repeating: 0, count: 4)
+        assertNoThrow(try stream.seek(to: 0, from: .begin))
+        assertNoThrow(try stream.read(to: &buffer, count: 4))
+        assertEqual(buffer, [1, 2, 3, 4])
+
+
+        buffer = [UInt8](repeating: 0, count: 4)
+        assertNoThrow(try stream.seek(to: 0, from: .begin))
+
+        let writtenFirst = try? stream.write(data, count: 2)
+        assertEqual(writtenFirst, 2)
+        assertNoThrow(try stream.seek(to: 0, from: .begin))
+        assertNoThrow(try stream.read(to: &buffer, count: 2))
+        assertEqual(buffer, [1, 2, 0, 0])
+
+        assertNoThrow(try stream.seek(to: 0, from: .end))
+        let writtenLast = try? stream.write(data.suffix(from: 2))
+        assertEqual(writtenLast, 2)
+        assertNoThrow(try stream.seek(to: -2, from: .end))
+        assertNoThrow(try stream.read(to: &buffer[2], count: 2))
+        assertEqual(buffer, data)
     }
 
     func testRead() {
         let stream = MemoryStream()
         let data: [UInt8] = [1, 2, 3, 4]
+        assertNoThrow(try stream.write(data, count: 4))
+
         var buffer = [UInt8](repeating: 0, count: 4)
-        _ = try? stream.write(data, count: 4)
+        assertNoThrow(try stream.seek(to: 0, from: .begin))
 
         let read = try? stream.read(to: &buffer, count: 4)
         assertEqual(read, 4)
         assertEqual(buffer, data)
-    }
+        assertEqual(stream.position, 4)
+        assertEqual(stream.remain, 0)
+        assertEqual(stream.count, 4)
 
-    func testWriteOffset() {
-        let stream = MemoryStream()
-        let data: [UInt8] = [1, 2, 3, 4]
 
-        let written = try? stream.write(data, offset: 2, count: 2)
-        assertEqual(written, 2)
-
-        var buffer = [UInt8](repeating: 0, count: 2)
-        _ = try? stream.read(to: &buffer, count: 2)
-        assertEqual(buffer, [3, 4])
-    }
-
-    func testReadOffset() {
-        let stream = MemoryStream()
-        let data: [UInt8] = [1, 2, 3, 4]
-
-        _ = try? stream.write(data, count: 4)
-
-        var buffer = [UInt8](repeating: 0, count: 4)
-        let read = try? stream.read(to: &buffer, offset: 2, count: 2)
-        assertEqual(read, 2)
-        assertEqual(buffer, [0, 0, 1, 2])
-    }
-
-    func testWritePiece() {
-        let stream = MemoryStream()
-        let data: [UInt8] = [1, 2, 3, 4]
-        var buffer = [UInt8](repeating: 0, count: 4)
-
-        let writtenFirst = try? stream.write(data, count: 2)
-        assertEqual(writtenFirst, 2)
-        _ = try? stream.read(to: &buffer, count: 2)
-        assertEqual(buffer, [1, 2, 0, 0])
-
-        let writtenLast = try? stream.write(data, offset: 2, count: 2)
-        assertEqual(writtenLast, 2)
-        _ = try? stream.read(to: &buffer, offset: 2, count: 2)
-        assertEqual(buffer, data)
-    }
-
-    func testReadPiece() {
-        let stream = MemoryStream()
-        let data: [UInt8] = [1, 2, 3, 4]
-        var buffer = [UInt8](repeating: 0, count: 4)
-        _ = try? stream.write(data, count: 4)
+        buffer = [UInt8](repeating: 0, count: 4)
+        assertNoThrow(try stream.seek(to: 0, from: .begin))
 
         let readFirst = try? stream.read(to: &buffer, count: 2)
         assertEqual(readFirst, 2)
         assertEqual(buffer, [1, 2, 0, 0])
-
-        let readLast = try? stream.read(to: &buffer, offset: 2, count: 2)
-        assertEqual(readLast, 2)
-        assertEqual(buffer, data)
-    }
-
-    func testInitialSize() {
-        let stream = MemoryStream()
-        assertEqual(stream.allocated, 8)
-        assertEqual(stream.offset, 0)
-        assertEqual(stream.count, 0)
-    }
-
-    func testShift() {
-        let stream = MemoryStream()
-        let data: [UInt8] = [1, 2, 3, 4, 5, 6, 7, 8]
-
-        _ = try? stream.write(data, count: data.count)
-        assertEqual(stream.allocated, 8)
-        assertEqual(stream.offset, 0)
-        assertEqual(stream.count, 8)
-
-        var buffer = [UInt8](repeating: 0, count: 6)
-        _ = try? stream.read(to: &buffer, count: buffer.count)
-        assertEqual(buffer, [1, 2, 3, 4, 5, 6])
-        assertEqual(stream.allocated, 8)
-        assertEqual(stream.offset, 6)
-        assertEqual(stream.count, 2)
-
-        _ = try? stream.write(data, offset: 4, count: 2)
-        assertEqual(stream.allocated, 8)
-        assertEqual(stream.offset, 0)
+        assertEqual(stream.position, 2)
+        assertEqual(stream.remain, 2)
         assertEqual(stream.count, 4)
 
-        buffer = [UInt8](repeating: 0, count: 4)
-        _ = try? stream.read(to: &buffer, count: buffer.count)
-        assertEqual(buffer, [7, 8, 5, 6])
-        assertEqual(stream.allocated, 8)
-        assertEqual(stream.offset, 0)
-        assertEqual(stream.count, 0)
+        let readLast = try? stream.read(to: &buffer[2], count: 2)
+        assertEqual(readLast, 2)
+        assertEqual(buffer, data)
+        assertEqual(stream.position, 4)
+        assertEqual(stream.remain, 0)
+        assertEqual(stream.count, 4)
     }
 
     func testReallocate() {
         let stream = MemoryStream()
         let data: [UInt8] = [1, 2, 3, 4, 5, 6, 7, 8]
 
+        assertEqual(stream.allocated, 0)
+        assertEqual(stream.position, 0)
+
         _ = try? stream.write(data, count: data.count)
-        assertEqual(stream.allocated, 8)
-        assertEqual(stream.offset, 0)
+        assertEqual(stream.allocated, 256)
+        assertEqual(stream.position, 8)
+        assertEqual(stream.remain, 0)
         assertEqual(stream.count, 8)
 
-        var buffer = [UInt8](repeating: 0, count: 3)
-        _ = try? stream.read(to: &buffer, count: buffer.count)
-        assertEqual(buffer, [1, 2, 3])
-        assertEqual(stream.allocated, 8)
-        assertEqual(stream.offset, 3)
-        assertEqual(stream.count, 5)
+        let data300 = [UInt8](repeating: 111, count: 300)
 
-        _ = try? stream.write(data, count: data.count)
-        assertEqual(stream.allocated, 26)
-        assertEqual(stream.offset, 0)
-        assertEqual(stream.count, 13)
+        _ = try? stream.write(data300, count: data300.count)
+        assertEqual(stream.allocated, 512)
+        assertEqual(stream.position, 308)
+        assertEqual(stream.remain, 0)
+        assertEqual(stream.count, 308)
 
-        buffer = [UInt8](repeating: 0, count: 13)
+        var buffer = [UInt8](repeating: 0, count: 308)
+        try? stream.seek(to: 0, from: .begin)
         _ = try? stream.read(to: &buffer, count: buffer.count)
-        assertEqual(buffer, [4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8])
-        assertEqual(stream.allocated, 26)
-        assertEqual(stream.offset, 0)
-        assertEqual(stream.count, 0)
+        assertEqual(buffer, [1, 2, 3, 4, 5, 6, 7, 8] + data300)
+        assertEqual(stream.allocated, 512)
+        assertEqual(stream.position, 308)
+        assertEqual(stream.remain, 0)
+        assertEqual(stream.count, 308)
     }
 
     func testCapacity() {
         let stream = MemoryStream(capacity: 4)
         let data: [UInt8] = [1, 2, 3, 4]
-        assertNoThrow(try stream.write(data, count: 4))
-
-        assertThrowsError(try stream.write(data, count: 4)) { error in
-            assertEqual(error as? StreamError, StreamError.full)
-        }
-    }
-
-    func testCapacityPiece() {
-        let stream = MemoryStream(capacity: 4)
-        let data: [UInt8] = [1, 2, 3, 4]
         assertNoThrow(try stream.write(data, count: 2))
 
-        let written = try? stream.write(data, count: 4)
-        assertEqual(written, 2)
-
         assertThrowsError(try stream.write(data, count: 4)) { error in
-            assertEqual(error as? StreamError, StreamError.full)
+            assertEqual(error as? StreamError, StreamError.notEnoughSpace)
         }
-    }
-
-    func testCapacityShift() {
-        let stream = MemoryStream(capacity: 4)
-        let data: [UInt8] = [1, 2, 3, 4]
-        var buffer = [UInt8](repeating: 0, count: 4)
-
-        _ = try? stream.write(data, count: 4)
-        _ = try? stream.read(to: &buffer, count: 1)
-        _ = try? stream.write(data, count: 1)
-
-        let read = try? stream.read(to: &buffer, count: 4)
-        assertEqual(read, 4)
-        assertEqual(buffer, [2, 3, 4, 1])
     }
 
     func testTrivial() {
@@ -217,43 +205,48 @@ class MemoryStreamTests: TestCase {
         var buffer = [UInt8](repeating: 0, count: 8)
 
         _ = try? stream.write(Int64(0x0102030405060708))
+        try? stream.seek(to: 0, from: .begin)
         let read = try? stream.read(to: &buffer, count: 8)
         assertEqual(read, 8)
         assertEqual(buffer, [8, 7, 6, 5, 4, 3, 2, 1])
 
+        try? stream.seek(to: 0, from: .begin)
         assertNoThrow(try stream.write(Int.max))
-        assertEqual(try? stream.read(), Int.max)
         assertNoThrow(try stream.write(Int8.max))
-        assertEqual(try? stream.read(), Int8.max)
         assertNoThrow(try stream.write(Int16.max))
-        assertEqual(try? stream.read(), Int16.max)
         assertNoThrow(try stream.write(Int32.max))
-        assertEqual(try? stream.read(), Int32.max)
         assertNoThrow(try stream.write(Int64.max))
-        assertEqual(try? stream.read(), Int64.max)
         assertNoThrow(try stream.write(UInt.max))
-        assertEqual(try? stream.read(), UInt.max)
         assertNoThrow(try stream.write(UInt8.max))
-        assertEqual(try? stream.read(), UInt8.max)
         assertNoThrow(try stream.write(UInt16.max))
-        assertEqual(try? stream.read(), UInt16.max)
         assertNoThrow(try stream.write(UInt32.max))
-        assertEqual(try? stream.read(), UInt32.max)
         assertNoThrow(try stream.write(UInt64.max))
+
+        try? stream.seek(to: 0, from: .begin)
+        assertEqual(try? stream.read(), Int.max)
+        assertEqual(try? stream.read(), Int8.max)
+        assertEqual(try? stream.read(), Int16.max)
+        assertEqual(try? stream.read(), Int32.max)
+        assertEqual(try? stream.read(), Int64.max)
+        assertEqual(try? stream.read(), UInt.max)
+        assertEqual(try? stream.read(), UInt8.max)
+        assertEqual(try? stream.read(), UInt16.max)
+        assertEqual(try? stream.read(), UInt32.max)
         assertEqual(try? stream.read(), UInt64.max)
 
         assertThrowsError(try stream.read() as Int) { error in
-            assertEqual(error as? StreamError, StreamError.eof)
+            assertEqual(error as? StreamError, StreamError.insufficientData)
         }
 
         assertNoThrow(try stream.write(UInt32.max))
+        try! stream.seek(to: -MemoryLayout<UInt32>.size, from: .end)
         assertThrowsError(try stream.read() as UInt64) { error in
             assertEqual(error as? StreamError, StreamError.insufficientData)
         }
     }
 
     func testBuffer() {
-        let stream = MemoryStream()
+        let stream = MemoryStream(capacity: 4)
         let data: [UInt8] = [1, 2, 3, 4]
 
         assertNoThrow(try stream.write(data, count: 4))
@@ -261,6 +254,6 @@ class MemoryStreamTests: TestCase {
 
         var buffer = [UInt8](repeating: 0, count: 1)
         assertNoThrow(try stream.read(to: &buffer))
-        assertEqual([2, 3, 4], [UInt8](stream.buffer))
+        assertEqual([1, 2, 3, 4], [UInt8](stream.buffer))
     }
 }
