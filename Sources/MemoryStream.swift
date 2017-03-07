@@ -103,7 +103,9 @@ public final class MemoryStream: Stream, Seekable {
 
     fileprivate func reallocate(count: Int) {
         let storage = UnsafeMutableRawBufferPointer(
-            start: UnsafeMutableRawPointer.allocate(bytes: count, alignedTo: 8),
+            start: UnsafeMutableRawPointer.allocate(
+                bytes: count,
+                alignedTo: MemoryLayout<UInt>.alignment),
             count: count)
 
         storage.copyBytes(from: self.storage)
