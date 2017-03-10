@@ -138,32 +138,12 @@ public final class MemoryStream: Stream, Seekable {
 }
 
 extension MemoryStream {
-    @_specialize(Int)
-    @_specialize(Int8)
-    @_specialize(Int16)
-    @_specialize(Int32)
-    @_specialize(Int64)
-    @_specialize(UInt)
-    @_specialize(UInt8)
-    @_specialize(UInt16)
-    @_specialize(UInt32)
-    @_specialize(UInt64)
-    public func write<T: Integer>(_ value: T) throws {
+    public func write<T: Integer>(_ value: T, as type: T.Type) throws {
         let buffer = try consumeBuffer(count: MemoryLayout<T>.size)
         buffer.baseAddress!.assumingMemoryBound(to: T.self).pointee = value
     }
 
-    @_specialize(Int)
-    @_specialize(Int8)
-    @_specialize(Int16)
-    @_specialize(Int32)
-    @_specialize(Int64)
-    @_specialize(UInt)
-    @_specialize(UInt8)
-    @_specialize(UInt16)
-    @_specialize(UInt32)
-    @_specialize(UInt64)
-    public func read<T: Integer>() throws -> T {
+    public func read<T: Integer>(as type: T.Type) throws -> T {
         let buffer = try read(upTo: MemoryLayout<T>.size)
         return buffer.baseAddress!.assumingMemoryBound(to: T.self).pointee
     }
