@@ -105,7 +105,9 @@ public final class MemoryStream: Stream, Seekable {
         self.storage = storage
     }
 
-    fileprivate func consumeBuffer(count: Int) throws -> UnsafeMutableRawBufferPointer {
+    fileprivate func consumeBuffer(
+        count: Int
+    ) throws -> UnsafeMutableRawBufferPointer {
         let endIndex = position + count
         if _slowPath(endIndex > storage.count) {
             guard expandable else {
