@@ -35,21 +35,13 @@ public final class MemoryStream: Stream, Seekable {
     /// Expandable stream with reserved capacity
     public init(reservingCapacity count: Int) {
         self.expandable = true
-        self.storage = UnsafeMutableRawBufferPointer(
-            start: UnsafeMutableRawPointer.allocate(
-                bytes: count,
-                alignedTo: MemoryLayout<UInt>.alignment),
-            count: count)
+        self.storage = UnsafeMutableRawBufferPointer.allocate(count: count)
     }
 
     /// Non-resizable stream
     public init(capacity: Int) {
         self.expandable = false
-        self.storage = UnsafeMutableRawBufferPointer(
-            start: UnsafeMutableRawPointer.allocate(
-                bytes: capacity,
-                alignedTo: MemoryLayout<UInt>.alignment),
-            count: capacity)
+        self.storage = UnsafeMutableRawBufferPointer.allocate(count: capacity)
     }
 
     deinit {
