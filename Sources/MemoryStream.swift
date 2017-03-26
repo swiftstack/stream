@@ -88,53 +88,46 @@ public final class MemoryStream: Stream, Seekable {
         guard bytes.count > 0 else {
             return 0
         }
-        let buffer = try consumeBuffer(count: bytes.count)
-        buffer.copyBytes(from: bytes)
-        return bytes.count
-    }
+        let endIndex = position + bytes.count
+        try ensure(capacity: endIndex)
 
-    fileprivate func reallocate(count: Int) {
-        let storage = UnsafeMutableRawBufferPointer(
-            start: UnsafeMutableRawPointer.allocate(
-                bytes: count,
-                alignedTo: MemoryLayout<UInt>.alignment),
-            count: count)
-
-        storage.copyBytes(from: self.storage)
-        self.storage.deallocate()
-        self.storage = storage
-    }
-
-    fileprivate func consumeBuffer(
-        count: Int
-    ) throws -> UnsafeMutableRawBufferPointer {
-        let endIndex = position + count
-        if _slowPath(endIndex > storage.count) {
-            guard expandable else {
-                throw StreamError.notEnoughSpace
-            }
-            var size = 256
-            while endIndex > size {
-                size <<= 1
-            }
-            reallocate(count: size)
-        }
-
-        let buffer = storage[position..<endIndex]
+        storage[position..<endIndex].copyBytes(from: bytes)
 
         position = endIndex
         if position > self.endIndex {
             self.endIndex = position
         }
 
-        return buffer
+        return bytes.count
+    }
+
+    fileprivate func reallocate(count: Int) {
+        let storage = UnsafeMutableRawBufferPointer.allocate(count: count)
+        storage.copyBytes(from: self.storage)
+        self.storage.deallocate()
+        self.storage = storage
+    }
+
+    fileprivate func ensure(capacity count: Int) throws {
+        if _slowPath(count > storage.count) {
+            guard expandable else {
+                throw StreamError.notEnoughSpace
+            }
+            var size = 256
+            while count > size {
+                size <<= 1
+            }
+            reallocate(count: size)
+        }
     }
 }
 
 extension MemoryStream {
     public func write<T: Integer>(_ value: T) throws {
-        let buffer = try consumeBuffer(count: MemoryLayout<T>.size)
-        buffer.baseAddress!.assumingMemoryBound(to: T.self).pointee = value
+        var value = value
+        _ = try withUnsafeBytes(of: &value) { buffer in
+            try write(buffer)
+        }
     }
 
     public func read<T: Integer>(_ type: T.Type) throws -> T {
