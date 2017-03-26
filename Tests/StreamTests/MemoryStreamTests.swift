@@ -204,43 +204,43 @@ class MemoryStreamTests: TestCase {
         let stream = MemoryStream()
         var buffer = [UInt8](repeating: 0, count: 8)
 
-        _ = try? stream.write(0x0102030405060708, as: Int64.self)
+        _ = try? stream.write(0x0102030405060708)
         try? stream.seek(to: 0, from: .begin)
         let read = try? stream.read(to: &buffer, count: 8)
         assertEqual(read, 8)
         assertEqual(buffer, [8, 7, 6, 5, 4, 3, 2, 1])
 
         try? stream.seek(to: 0, from: .begin)
-        assertNoThrow(try stream.write(Int.max, as: Int.self))
-        assertNoThrow(try stream.write(Int8.max, as: Int8.self))
-        assertNoThrow(try stream.write(Int16.max, as: Int16.self))
-        assertNoThrow(try stream.write(Int32.max, as: Int32.self))
-        assertNoThrow(try stream.write(Int64.max, as: Int64.self))
-        assertNoThrow(try stream.write(UInt.max, as: UInt.self))
-        assertNoThrow(try stream.write(UInt8.max, as: UInt8.self))
-        assertNoThrow(try stream.write(UInt16.max, as: UInt16.self))
-        assertNoThrow(try stream.write(UInt32.max, as: UInt32.self))
-        assertNoThrow(try stream.write(UInt64.max, as: UInt64.self))
+        assertNoThrow(try stream.write(Int.max))
+        assertNoThrow(try stream.write(Int8.max))
+        assertNoThrow(try stream.write(Int16.max))
+        assertNoThrow(try stream.write(Int32.max))
+        assertNoThrow(try stream.write(Int64.max))
+        assertNoThrow(try stream.write(UInt.max))
+        assertNoThrow(try stream.write(UInt8.max))
+        assertNoThrow(try stream.write(UInt16.max))
+        assertNoThrow(try stream.write(UInt32.max))
+        assertNoThrow(try stream.write(UInt64.max))
 
         try? stream.seek(to: 0, from: .begin)
-        assertEqual(try? stream.read(as: Int.self), Int.max)
-        assertEqual(try? stream.read(as: Int8.self), Int8.max)
-        assertEqual(try? stream.read(as: Int16.self), Int16.max)
-        assertEqual(try? stream.read(as: Int32.self), Int32.max)
-        assertEqual(try? stream.read(as: Int64.self), Int64.max)
-        assertEqual(try? stream.read(as: UInt.self), UInt.max)
-        assertEqual(try? stream.read(as: UInt8.self), UInt8.max)
-        assertEqual(try? stream.read(as: UInt16.self), UInt16.max)
-        assertEqual(try? stream.read(as: UInt32.self), UInt32.max)
-        assertEqual(try? stream.read(as: UInt64.self), UInt64.max)
+        assertEqual(try? stream.read(Int.self), Int.max)
+        assertEqual(try? stream.read(Int8.self), Int8.max)
+        assertEqual(try? stream.read(Int16.self), Int16.max)
+        assertEqual(try? stream.read(Int32.self), Int32.max)
+        assertEqual(try? stream.read(Int64.self), Int64.max)
+        assertEqual(try? stream.read(UInt.self), UInt.max)
+        assertEqual(try? stream.read(UInt8.self), UInt8.max)
+        assertEqual(try? stream.read(UInt16.self), UInt16.max)
+        assertEqual(try? stream.read(UInt32.self), UInt32.max)
+        assertEqual(try? stream.read(UInt64.self), UInt64.max)
 
-        assertThrowsError(try stream.read(as: Int.self)) { error in
+        assertThrowsError(try stream.read(Int.self)) { error in
             assertEqual(error as? StreamError, StreamError.insufficientData)
         }
 
-        assertNoThrow(try stream.write(UInt32.max, as: UInt32.self))
+        assertNoThrow(try stream.write(UInt32.max))
         try! stream.seek(to: -MemoryLayout<UInt32>.size, from: .end)
-        assertThrowsError(try stream.read(as: UInt64.self)) { error in
+        assertThrowsError(try stream.read(UInt64.self)) { error in
             assertEqual(error as? StreamError, StreamError.insufficientData)
         }
     }

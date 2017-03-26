@@ -15,7 +15,9 @@ public protocol OutputStream {
 }
 
 extension InputStream {
-    public func read(to buffer: UnsafeMutableRawPointer, count: Int) throws -> Int {
+    public func read(
+        to buffer: UnsafeMutableRawPointer, count: Int
+    ) throws -> Int {
         return try read(to: UnsafeMutableRawBufferPointer(
             start: buffer,
             count: count))
