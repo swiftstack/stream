@@ -1,3 +1,4 @@
+import Test
 @testable import Stream
 
 class StreamTests: TestCase {
@@ -46,17 +47,17 @@ class StreamTests: TestCase {
     }
 
     func testStreamType() {
-        let type = String(describing: type(of: Stream.self))
-        assertEqual(type, "Stream.Protocol")
+        let protocolType = String(describing: type(of: Stream.self))
+        assertEqual(protocolType, "Stream.Protocol")
     }
 
     func testInputStreamType() {
-        let type = String(describing: type(of: InputStream.self))
-        assertEqual(type, "InputStream.Protocol")
+        let protocolType = String(describing: type(of: InputStream.self))
+        assertEqual(protocolType, "InputStream.Protocol")
     }
 
     func testOutputStreamType() {
-        let type = String(describing: type(of: OutputStream.self))
-        assertEqual(type, "OutputStream.Protocol")
+        let protocolType = String(describing: type(of: OutputStream.self))
+        assertEqual(protocolType, "OutputStream.Protocol")
     }
 }

@@ -68,11 +68,15 @@ public final class MemoryStream: Stream, Seekable {
     }
 
     public func read(upTo end: Int) throws -> UnsafeRawBufferPointer {
+        guard storage.baseAddress != nil else {
+            return UnsafeRawBufferPointer(start: nil, count: 0)
+        }
         guard remain >= end else {
             throw StreamError.insufficientData
         }
         position += end
-        return UnsafeRawBufferPointer(storage[position-end..<position])
+        return UnsafeRawBufferPointer(
+            rebasing: storage[position-end..<position])
     }
 
     public func read(to buffer: UnsafeMutableRawBufferPointer) throws -> Int {
@@ -91,7 +95,8 @@ public final class MemoryStream: Stream, Seekable {
         let endIndex = position + bytes.count
         try ensure(capacity: endIndex)
 
-        storage[position..<endIndex].copyBytes(from: bytes)
+        UnsafeMutableRawBufferPointer(rebasing: storage[position..<endIndex])
+            .copyBytes(from: bytes)
 
         position = endIndex
         if position > self.endIndex {
@@ -123,14 +128,14 @@ public final class MemoryStream: Stream, Seekable {
 }
 
 extension MemoryStream {
-    public func write<T: Integer>(_ value: T) throws {
+    public func write<T: Numeric>(_ value: T) throws {
         var value = value
         _ = try withUnsafeBytes(of: &value) { buffer in
             try write(buffer)
         }
     }
 
-    public func read<T: Integer>(_ type: T.Type) throws -> T {
+    public func read<T: Numeric>(_ type: T.Type) throws -> T {
         let buffer = try read(upTo: MemoryLayout<T>.size)
         return buffer.baseAddress!.assumingMemoryBound(to: T.self).pointee
     }

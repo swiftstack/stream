@@ -1,3 +1,4 @@
+import Test
 @testable import Stream
 
 class MemoryStreamTests: TestCase {
