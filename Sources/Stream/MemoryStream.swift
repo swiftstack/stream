@@ -13,7 +13,7 @@ public final class MemoryStream: Stream, Seekable {
         return endIndex - position
     }
 
-    public var allocated: Int {
+    public var capacity: Int {
         return storage.count
     }
 

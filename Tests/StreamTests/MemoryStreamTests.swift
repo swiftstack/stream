@@ -19,7 +19,7 @@ class MemoryStreamTests: TestCase {
 
     func testInitialSize() {
         let stream = MemoryStream()
-        assertEqual(stream.allocated, 0)
+        assertEqual(stream.capacity, 0)
         assertEqual(stream.position, 0)
         assertEqual(stream.remain, 0)
     }
@@ -164,11 +164,11 @@ class MemoryStreamTests: TestCase {
         let stream = MemoryStream()
         let data: [UInt8] = [1, 2, 3, 4, 5, 6, 7, 8]
 
-        assertEqual(stream.allocated, 0)
+        assertEqual(stream.capacity, 0)
         assertEqual(stream.position, 0)
 
         _ = try? stream.write(data, count: data.count)
-        assertEqual(stream.allocated, 256)
+        assertEqual(stream.capacity, 256)
         assertEqual(stream.position, 8)
         assertEqual(stream.remain, 0)
         assertEqual(stream.count, 8)
@@ -176,7 +176,7 @@ class MemoryStreamTests: TestCase {
         let data300 = [UInt8](repeating: 111, count: 300)
 
         _ = try? stream.write(data300, count: data300.count)
-        assertEqual(stream.allocated, 512)
+        assertEqual(stream.capacity, 512)
         assertEqual(stream.position, 308)
         assertEqual(stream.remain, 0)
         assertEqual(stream.count, 308)
@@ -185,7 +185,7 @@ class MemoryStreamTests: TestCase {
         try? stream.seek(to: 0, from: .begin)
         _ = try? stream.read(to: &buffer, count: buffer.count)
         assertEqual(buffer, [1, 2, 3, 4, 5, 6, 7, 8] + data300)
-        assertEqual(stream.allocated, 512)
+        assertEqual(stream.capacity, 512)
         assertEqual(stream.position, 308)
         assertEqual(stream.remain, 0)
         assertEqual(stream.count, 308)
