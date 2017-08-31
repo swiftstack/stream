@@ -130,9 +130,8 @@ public final class MemoryStream: Stream, Seekable {
 extension MemoryStream {
     public func write<T: Numeric>(_ value: T) throws {
         var value = value
-        _ = try withUnsafeBytes(of: &value) { buffer in
-            try write(buffer)
-        }
+        _ = try write(UnsafeRawBufferPointer(
+            start: &value, count: MemoryLayout<T>.size))
     }
 
     public func read<T: Numeric>(_ type: T.Type) throws -> T {
