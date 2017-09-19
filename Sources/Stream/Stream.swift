@@ -1,9 +1,3 @@
-public enum StreamError: Error {
-    case notEnoughSpace
-    case insufficientData
-    case invalidSeekOffset
-}
-
 public protocol Stream: InputStream, OutputStream {}
 
 public protocol InputStream {
