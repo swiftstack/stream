@@ -23,6 +23,12 @@ extension InputStream {
             count: count))
     }
 
+    public func read(to buffer: inout ArraySlice<UInt8>) throws -> Int {
+        return try buffer.withUnsafeMutableBytes { buffer in
+            return try read(to: buffer)
+        }
+    }
+
     public func read(to buffer: inout [UInt8]) throws -> Int {
         return try buffer.withUnsafeMutableBytes { buffer in
             return try read(to: buffer)
