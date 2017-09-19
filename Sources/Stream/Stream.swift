@@ -41,8 +41,8 @@ extension OutputStream {
         return try write(UnsafeRawBufferPointer(start: bytes, count: count))
     }
 
-    public func write(_ slice: ArraySlice<UInt8>) throws -> Int {
-        return try slice.withUnsafeBytes { buffer in
+    public func write(_ bytes: ArraySlice<UInt8>) throws -> Int {
+        return try bytes.withUnsafeBytes { buffer in
             return try write(buffer)
         }
     }
