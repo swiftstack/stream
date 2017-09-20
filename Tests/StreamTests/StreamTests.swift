@@ -2,24 +2,24 @@ import Test
 @testable import Stream
 
 class StreamTests: TestCase {
-    class TestStream: Stream {
-        func read(to buffer: UnsafeMutableRawBufferPointer) throws -> Int {
+    public class TestStream: Stream {
+        public func read(to buffer: UnsafeMutableRawBufferPointer) throws -> Int {
             return buffer.count
         }
 
-        func write(_ bytes: UnsafeRawBufferPointer) throws -> Int {
+        public func write(_ bytes: UnsafeRawBufferPointer) throws -> Int {
             return bytes.count
         }
     }
 
-    class TestInputStream: InputStream {
-        func read(to buffer: UnsafeMutableRawBufferPointer) throws -> Int {
+    public class TestInputStream: InputStream {
+        public func read(to buffer: UnsafeMutableRawBufferPointer) throws -> Int {
             return buffer.count
         }
     }
 
-    class TestOutputStream: OutputStream {
-        func write(_ bytes: UnsafeRawBufferPointer) throws -> Int {
+    public class TestOutputStream: OutputStream {
+        public func write(_ bytes: UnsafeRawBufferPointer) throws -> Int {
             return bytes.count
         }
     }
