@@ -2,7 +2,7 @@ public struct UnsafeRawInputStream: InputStream {
     let pointer: UnsafeRawPointer
     let count: Int
 
-    public var position: Int
+    public private(set) var position: Int
 
     public init(pointer: UnsafeRawPointer, count: Int) {
         self.pointer = pointer
@@ -26,7 +26,7 @@ public struct UnsafeRawOutputStream: OutputStream {
     let pointer: UnsafeMutableRawPointer
     let count: Int
 
-    public var position: Int
+    public private(set) var position: Int
 
     public init(pointer: UnsafeMutableRawPointer, count: Int) {
         self.pointer = pointer

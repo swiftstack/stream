@@ -1,7 +1,7 @@
 public struct InputByteStream: InputStream {
     public let bytes: [UInt8]
 
-    public var position = 0
+    public private(set) var position = 0
 
     public init(_ bytes: [UInt8]) {
         self.bytes = bytes
@@ -20,6 +20,10 @@ public struct InputByteStream: InputStream {
 
 public struct OutputByteStream: OutputStream {
     public var bytes: [UInt8]
+
+    public var position: Int {
+        return bytes.count
+    }
 
     public init(reservingCapacity capacity: Int = 1024) {
         bytes = []
