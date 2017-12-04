@@ -13,7 +13,7 @@ class BufferedStreamTests: TestCase {
 
     func testBufferedInputStream() {
         let baseStream = TestInputStreamSequence()
-        let stream = BufferedInputStream(stream: baseStream, capacity: 10)
+        var stream = BufferedInputStream(stream: baseStream, capacity: 10)
         assertEqual(stream.storage.count, 10)
         assertEqual(stream.buffered, 0)
 
@@ -44,7 +44,7 @@ class BufferedStreamTests: TestCase {
 
     func testBufferedOutputStream() {
         let testStream = TestStream()
-        let stream = BufferedOutputStream(stream: testStream, capacity: 10)
+        var stream = BufferedOutputStream(stream: testStream, capacity: 10)
         assertEqual(stream.storage.count, 10)
         assertEqual(stream.buffered, 0)
 
@@ -84,7 +84,7 @@ class BufferedStreamTests: TestCase {
     }
 
     func testBufferedStream() {
-        let stream = BufferedStream(stream: TestStream(), capacity: 10)
+        var stream = BufferedStream(stream: TestStream(), capacity: 10)
 
         func read(count: Int) -> [UInt8] {
             var buffer = [UInt8](repeating: 0, count: count)

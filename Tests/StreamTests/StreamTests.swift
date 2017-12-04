@@ -4,7 +4,7 @@ import Test
 class StreamTests: TestCase {
     func testStream() {
         let testStream  = TestStream()
-        let stream = testStream as Stream
+        var stream = testStream as Stream
         var bytes = [UInt8]()
         assertNoThrow(try stream.read(to: &bytes, count: 0))
         assertNoThrow(try stream.write(bytes, count: 0))
@@ -12,20 +12,20 @@ class StreamTests: TestCase {
 
     func testInputStream() {
         let testStream  = TestStream()
-        let inputStream = testStream as InputStream
+        var inputStream = testStream as InputStream
         var buffer = [UInt8]()
         assertNoThrow(try inputStream.read(to: &buffer, count: 0))
     }
 
     func testOutputStream() {
         let testStream  = TestStream()
-        let outputStream = testStream as OutputStream
+        var outputStream = testStream as OutputStream
         let bytes = [UInt8]()
         assertNoThrow(try outputStream.write(bytes, count: 0))
     }
 
     func testNumeric() {
-        let stream  = TestStream()
+        var stream  = TestStream()
         do {
             try stream.write(Int(-1))
             try stream.write(Int8(-2))
@@ -55,11 +55,11 @@ class StreamTests: TestCase {
 
     func testCopyBytes() {
         do {
-            let input  = TestStream()
-            let output  = TestStream()
+            var input = TestStream()
+            var output = TestStream()
 
             assertEqual(try input.write([0,1,2,3,4,5,6,7,8,9]), 10)
-            let copied = try output.copyBytes(from: input, bufferSize: 3)
+            let copied = try output.copyBytes(from: &input, bufferSize: 3)
             assertEqual(copied, 10)
             assertEqual(output.storage, [0,1,2,3,4,5,6,7,8,9])
         } catch {
