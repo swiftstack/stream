@@ -1,5 +1,5 @@
 public class BufferedInputStream<T: InputStream>: InputStream {
-    public var baseStream: T
+    public let baseStream: T
 
     let storage: UnsafeMutableRawBufferPointer
     var position: Int
@@ -63,7 +63,7 @@ public class BufferedInputStream<T: InputStream>: InputStream {
 }
 
 public class BufferedOutputStream<T: OutputStream>: OutputStream {
-    public var baseStream: T
+    public let baseStream: T
 
     let storage: UnsafeMutableRawBufferPointer
     var buffered: Int
