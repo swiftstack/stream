@@ -1,4 +1,4 @@
-public struct InputByteStream: InputStream {
+public class InputByteStream: InputStream {
     public let bytes: [UInt8]
 
     public private(set) var position = 0
@@ -8,7 +8,7 @@ public struct InputByteStream: InputStream {
     }
 
     @inline(__always)
-    public mutating func read(
+    public func read(
         to buffer: UnsafeMutableRawBufferPointer
     ) throws -> Int {
         let count = min(bytes.count - position, buffer.count)
@@ -18,7 +18,7 @@ public struct InputByteStream: InputStream {
     }
 }
 
-public struct OutputByteStream: OutputStream {
+public class OutputByteStream: OutputStream {
     public var bytes: [UInt8]
 
     public var position: Int {
@@ -31,7 +31,7 @@ public struct OutputByteStream: OutputStream {
     }
 
     @inline(__always)
-    public mutating func write(_ bytes: UnsafeRawBufferPointer) throws -> Int {
+    public func write(_ bytes: UnsafeRawBufferPointer) throws -> Int {
         self.bytes.append(contentsOf: bytes)
         return bytes.count
     }

@@ -1,5 +1,5 @@
 extension OutputStream {
-    public mutating func copyBytes<T: InputStream>(
+    public func copyBytes<T: InputStream>(
         from input: inout T,
         bufferSize: Int = 4096
     ) throws -> Int {

@@ -44,7 +44,7 @@ class BufferedStreamTests: TestCase {
 
     func testBufferedOutputStream() {
         let testStream = TestStream()
-        var stream = BufferedOutputStream(stream: testStream, capacity: 10)
+        let stream = BufferedOutputStream(stream: testStream, capacity: 10)
         assertEqual(stream.storage.count, 10)
         assertEqual(stream.buffered, 0)
 

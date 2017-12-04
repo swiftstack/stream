@@ -1,4 +1,4 @@
-public struct UnsafeRawInputStream: InputStream {
+public class UnsafeRawInputStream: InputStream {
     let pointer: UnsafeRawPointer
     let count: Int
 
@@ -10,7 +10,7 @@ public struct UnsafeRawInputStream: InputStream {
         self.position = 0
     }
 
-    public mutating func read(
+    public func read(
         to buffer: UnsafeMutableRawBufferPointer
     ) throws -> Int {
         let count = min(self.count - position, buffer.count)
@@ -22,7 +22,7 @@ public struct UnsafeRawInputStream: InputStream {
     }
 }
 
-public struct UnsafeRawOutputStream: OutputStream {
+public class UnsafeRawOutputStream: OutputStream {
     let pointer: UnsafeMutableRawPointer
     let count: Int
 
@@ -34,7 +34,7 @@ public struct UnsafeRawOutputStream: OutputStream {
         self.position = 0
     }
 
-    public mutating func write(_ bytes: UnsafeRawBufferPointer) throws -> Int {
+    public func write(_ bytes: UnsafeRawBufferPointer) throws -> Int {
         let count = min(self.count - position, bytes.count)
         guard count > 0 else {
             return 0
