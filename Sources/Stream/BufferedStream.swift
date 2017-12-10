@@ -11,7 +11,9 @@ public class BufferedInputStream<T: InputStream>: InputStream {
 
     public init(stream: T, capacity: Int = 4096) {
         self.baseStream = stream
-        self.storage = UnsafeMutableRawBufferPointer.allocate(count: capacity)
+        self.storage = UnsafeMutableRawBufferPointer.allocate(
+            byteCount: capacity,
+            alignment: MemoryLayout<UInt>.alignment)
         self.position = 0
         self.count = 0
     }
@@ -74,7 +76,9 @@ public class BufferedOutputStream<T: OutputStream>: OutputStream {
 
     public init(stream: T, capacity: Int = 4096) {
         baseStream = stream
-        storage = UnsafeMutableRawBufferPointer.allocate(count: capacity)
+        storage = UnsafeMutableRawBufferPointer.allocate(
+            byteCount: capacity,
+            alignment: MemoryLayout<UInt>.alignment)
         buffered = 0
     }
 
@@ -82,7 +86,7 @@ public class BufferedOutputStream<T: OutputStream>: OutputStream {
         switch available - bytes.count {
         case 0...:
             UnsafeMutableRawBufferPointer(rebasing: storage[buffered...])
-                .copyBytes(from: bytes)
+                .copyMemory(from: bytes)
             buffered += bytes.count
             if buffered == storage.count {
                 try flush()

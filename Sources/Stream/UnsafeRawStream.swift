@@ -16,7 +16,7 @@ public class UnsafeRawInputStream: InputStream {
         let count = min(self.count - position, buffer.count)
         let source = UnsafeRawBufferPointer(
             start: pointer.advanced(by: position), count: count)
-        buffer.copyBytes(from: source)
+        buffer.copyMemory(from: source)
         position += count
         return count
     }
@@ -39,7 +39,7 @@ public class UnsafeRawOutputStream: OutputStream {
         guard count > 0 else {
             return 0
         }
-        pointer.copyBytes(from: bytes.baseAddress!, count: count)
+        pointer.copyMemory(from: bytes.baseAddress!, byteCount: count)
         position += count
         return count
     }
