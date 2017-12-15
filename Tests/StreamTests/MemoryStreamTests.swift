@@ -72,27 +72,27 @@ class MemoryStreamTests: TestCase {
         assertEqual(stream.count, 4)
 
         assertThrowsError(try stream.seek(to: -1, from: .begin)) { error in
-            assertEqual(error as? StreamError, StreamError.invalidSeekOffset)
+            assertEqual(error as? MemoryStream.Error, .invalidSeekOffset)
         }
 
         assertThrowsError(try stream.seek(to: 5, from: .begin)) { error in
-            assertEqual(error as? StreamError, StreamError.invalidSeekOffset)
+            assertEqual(error as? MemoryStream.Error, .invalidSeekOffset)
         }
 
         assertThrowsError(try stream.seek(to: -1, from: .current)) { error in
-            assertEqual(error as? StreamError, StreamError.invalidSeekOffset)
+            assertEqual(error as? MemoryStream.Error, .invalidSeekOffset)
         }
 
         assertThrowsError(try stream.seek(to: 5, from: .current)) { error in
-            assertEqual(error as? StreamError, StreamError.invalidSeekOffset)
+            assertEqual(error as? MemoryStream.Error, .invalidSeekOffset)
         }
 
         assertThrowsError(try stream.seek(to: 1, from: .end)) { error in
-            assertEqual(error as? StreamError, StreamError.invalidSeekOffset)
+            assertEqual(error as? MemoryStream.Error, .invalidSeekOffset)
         }
 
         assertThrowsError(try stream.seek(to: -5, from: .end)) { error in
-            assertEqual(error as? StreamError, StreamError.invalidSeekOffset)
+            assertEqual(error as? MemoryStream.Error, .invalidSeekOffset)
         }
     }
 
@@ -197,7 +197,7 @@ class MemoryStreamTests: TestCase {
         assertNoThrow(try stream.write(data, count: 2))
 
         assertThrowsError(try stream.write(data, count: 4)) { error in
-            assertEqual(error as? StreamError, StreamError.notEnoughSpace)
+            assertEqual(error as? MemoryStream.Error, .notEnoughSpace)
         }
     }
 
@@ -236,13 +236,13 @@ class MemoryStreamTests: TestCase {
         assertEqual(try? stream.read(UInt64.self), UInt64.max)
 
         assertThrowsError(try stream.read(Int.self)) { error in
-            assertEqual(error as? StreamError, StreamError.insufficientData)
+            assertEqual(error as? MemoryStream.Error, .insufficientData)
         }
 
         assertNoThrow(try stream.write(UInt32.max))
         try! stream.seek(to: -MemoryLayout<UInt32>.size, from: .end)
         assertThrowsError(try stream.read(UInt64.self)) { error in
-            assertEqual(error as? StreamError, StreamError.insufficientData)
+            assertEqual(error as? MemoryStream.Error, .insufficientData)
         }
     }
 
