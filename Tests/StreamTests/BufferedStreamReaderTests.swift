@@ -5,12 +5,16 @@ class BufferedStreamReaderTests: TestCase {
     class TestStream: InputStream {
         var counter: UInt8 = 0
 
-        func read(to buffer: UnsafeMutableRawBufferPointer) throws -> Int {
+        func read(
+            to buffer: UnsafeMutableRawPointer, byteCount: Int
+        ) throws -> Int {
             counter = counter &+ 1
-            for i in 0..<buffer.count {
-                buffer[i] = counter
+            for i in 0..<byteCount {
+                buffer.advanced(by: i)
+                    .assumingMemoryBound(to: UInt8.self)
+                    .pointee = counter
             }
-            return buffer.count
+            return byteCount
         }
     }
 
@@ -29,7 +33,7 @@ class BufferedStreamReaderTests: TestCase {
             assertEqual(input.capacity, 0)
 
             var buffer = try input.read(count: 10)
-            assertTrue(buffer.elementsEqual([UInt8](repeating: 1, count: 10)))
+            assertEqual([UInt8](buffer), [UInt8](repeating: 1, count: 10))
             assertEqual(input.readPosition, 10)
             // default size(0) is < requested,
             // so we reserve requested(10) * 2
@@ -37,37 +41,38 @@ class BufferedStreamReaderTests: TestCase {
 
             // stil have buffered data
             buffer = try input.read(count: 10)
-            assertTrue(buffer.elementsEqual([UInt8](repeating: 1, count: 10)))
+            assertEqual([UInt8](buffer), [UInt8](repeating: 1, count: 10))
             assertEqual(input.readPosition, 0)
             assertEqual(input.writePosition, 0)
 
             // buffer is empty so another read
             // from the source stream initiated
             buffer = try input.read(count: 5)
-            assertTrue(buffer.elementsEqual([UInt8](repeating: 2, count: 5)))
+            assertEqual([UInt8](buffer), [UInt8](repeating: 2, count: 5))
             assertEqual(input.readPosition, 5)
             assertEqual(input.writePosition, 20)
 
             // stil have 15 bytes
             // reallocate x2 because the content is > capacity / 2
             buffer = try input.read(count: 20)
-            assertTrue(buffer.elementsEqual(
+            assertEqual(
+                [UInt8](buffer), 
                 [UInt8](repeating: 2, count: 15) +
-                    [UInt8](repeating: 3, count: 5)))
+                    [UInt8](repeating: 3, count: 5))
             assertEqual(input.readPosition, 20)
             assertEqual(input.writePosition, 40)
 
             buffer = try input.read(count: 10)
-            assertTrue(buffer.elementsEqual([UInt8](repeating: 3, count: 10)))
+            assertEqual([UInt8](buffer), [UInt8](repeating: 3, count: 10))
             assertEqual(input.readPosition, 30)
             assertEqual(input.writePosition, 40)
             assertEqual(input.capacity, 40)
 
             // shift << the content because it's < capacity / 2
             buffer = try input.read(count: 20)
-            assertTrue(buffer.elementsEqual(
+            assertEqual([UInt8](buffer),
                 [UInt8](repeating: 3, count: 10) +
-                    [UInt8](repeating: 4, count: 10)))
+                    [UInt8](repeating: 4, count: 10))
             assertEqual(input.readPosition, 20)
             assertEqual(input.writePosition, 40)
             assertEqual(input.capacity, 40)
@@ -84,12 +89,12 @@ class BufferedStreamReaderTests: TestCase {
             assertEqual(input.capacity, 10)
 
             var buffer = try input.read(count: 10)
-            assertTrue(buffer.elementsEqual([UInt8](repeating: 1, count: 10)))
+            assertEqual([UInt8](buffer), [UInt8](repeating: 1, count: 10))
             assertEqual(input.readPosition, 0)
             assertEqual(input.writePosition, 0)
 
             buffer = try input.read(count: 10)
-            assertTrue(buffer.elementsEqual([UInt8](repeating: 2, count: 10)))
+            assertEqual([UInt8](buffer), [UInt8](repeating: 2, count: 10))
             assertEqual(input.readPosition, 0)
             assertEqual(input.writePosition, 0)
         } catch {
@@ -105,7 +110,7 @@ class BufferedStreamReaderTests: TestCase {
             assertEqual(input.capacity, 10)
 
             var buffer = try input.read(count: 10)
-            assertTrue(buffer.elementsEqual([UInt8](repeating: 1, count: 10)))
+            assertEqual([UInt8](buffer), [UInt8](repeating: 1, count: 10))
             assertEqual(input.readPosition, 0)
             assertEqual(input.writePosition, 0)
 
@@ -118,13 +123,13 @@ class BufferedStreamReaderTests: TestCase {
 
 
             buffer = try input.read(count: 2)
-            assertTrue(buffer.elementsEqual([UInt8](repeating: 2, count: 2)))
+            assertEqual([UInt8](buffer), [UInt8](repeating: 2, count: 2))
             assertEqual(input.readPosition, 2)
             assertEqual(input.writePosition, 10)
 
             // shift the rest and fill with another read
             buffer = try input.read(count: 9)
-            assertTrue(buffer.elementsEqual([UInt8](repeating: 2, count: 8) + [3]))
+            assertEqual([UInt8](buffer), [UInt8](repeating: 2, count: 8) + [3])
             assertEqual(input.readPosition, 9)
             assertEqual(input.writePosition, 10)
 
@@ -143,9 +148,9 @@ class BufferedStreamReaderTests: TestCase {
                 fail()
                 return
             }
-            assertTrue(buffer.elementsEqual(
+            assertEqual([UInt8](buffer),
                 [UInt8](repeating: 1, count: 5) +
-                    [UInt8](repeating: 2, count: 7)))
+                    [UInt8](repeating: 2, count: 7))
             assertEqual(input.readPosition, 12)
             assertEqual(input.writePosition, 26)
         } catch {
@@ -163,9 +168,9 @@ class BufferedStreamReaderTests: TestCase {
                 fail()
                 return
             }
-            assertTrue(buffer.elementsEqual(
+            assertEqual([UInt8](buffer),
                 [UInt8](repeating: 1, count: 5) +
-                    [UInt8](repeating: 2, count: 7)))
+                    [UInt8](repeating: 2, count: 7))
             assertEqual(input.readPosition, 12)
             assertEqual(input.writePosition, 26)
         } catch {
@@ -185,7 +190,7 @@ class BufferedStreamReaderTests: TestCase {
             fail()
             return
         }
-        assertTrue(buffer.elementsEqual([UInt8](repeating: 1, count: 5)))
+        assertEqual([UInt8](buffer), [UInt8](repeating: 1, count: 5))
         assertEqual(input.readPosition, 0)
         assertEqual(input.writePosition, 10)
     }
@@ -207,7 +212,7 @@ class BufferedStreamReaderTests: TestCase {
             assertEqual(input.writePosition, 0)
 
             let buffer = try input.read(count: 5)
-            assertTrue(buffer.elementsEqual([UInt8](repeating: 2, count: 5)))
+            assertEqual([UInt8](buffer), [UInt8](repeating: 2, count: 5))
             assertEqual(input.readPosition, 5)
             assertEqual(input.writePosition, 10)
         } catch {
@@ -230,9 +235,9 @@ class BufferedStreamReaderTests: TestCase {
             assertEqual(input.writePosition, 2)
 
             let buffer = try input.read(count: 10)
-            assertTrue(buffer.elementsEqual(
+            assertEqual([UInt8](buffer),
                 [UInt8](repeating: 3, count: 2)
-                    + [UInt8](repeating: 4, count: 8)))
+                    + [UInt8](repeating: 4, count: 8))
             assertEqual(input.readPosition, 10)
             assertEqual(input.writePosition, 24)
         } catch {
@@ -255,9 +260,9 @@ class BufferedStreamReaderTests: TestCase {
             assertEqual(input.writePosition, 2)
 
             let buffer = try input.read(count: 10)
-            assertTrue(buffer.elementsEqual(
+            assertEqual([UInt8](buffer),
                 [UInt8](repeating: 3, count: 2)
-                    + [UInt8](repeating: 4, count: 8)))
+                    + [UInt8](repeating: 4, count: 8))
             assertEqual(input.readPosition, 10)
             assertEqual(input.writePosition, 24)
         } catch {
@@ -267,9 +272,13 @@ class BufferedStreamReaderTests: TestCase {
 
     func testFeedLessThanReadCount() {
         class TenStream: InputStream {
-            func read(to buffer: UnsafeMutableRawBufferPointer) throws -> Int {
+            func read(
+                to buffer: UnsafeMutableRawPointer, byteCount: Int
+            ) throws -> Int {
                 for i in 0..<10 {
-                    buffer[i] = 10
+                    buffer.advanced(by: i)
+                        .assumingMemoryBound(to: UInt8.self)
+                        .pointee = 10
                 }
                 return 10
             }
@@ -281,7 +290,7 @@ class BufferedStreamReaderTests: TestCase {
             assertEqual(input.writePosition, 0)
 
             let buffer = try input.read(count: 20)
-            assertTrue(buffer.elementsEqual([UInt8](repeating: 10, count: 20)))
+            assertEqual([UInt8](buffer), [UInt8](repeating: 10, count: 20))
         } catch {
             fail(String(describing: error))
         }

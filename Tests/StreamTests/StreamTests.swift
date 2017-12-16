@@ -6,22 +6,22 @@ class StreamTests: TestCase {
         let testStream  = TestStream()
         let stream = testStream as Stream
         var bytes = [UInt8]()
-        assertNoThrow(try stream.read(to: &bytes, count: 0))
-        assertNoThrow(try stream.write(bytes, count: 0))
+        assertNoThrow(try stream.read(to: &bytes, byteCount: 0))
+        assertNoThrow(try stream.write(bytes, byteCount: 0))
     }
 
     func testInputStream() {
         let testStream  = TestStream()
         let inputStream = testStream as InputStream
         var buffer = [UInt8]()
-        assertNoThrow(try inputStream.read(to: &buffer, count: 0))
+        assertNoThrow(try inputStream.read(to: &buffer, byteCount: 0))
     }
 
     func testOutputStream() {
         let testStream  = TestStream()
         let outputStream = testStream as OutputStream
         let bytes = [UInt8]()
-        assertNoThrow(try outputStream.write(bytes, count: 0))
+        assertNoThrow(try outputStream.write(bytes, byteCount: 0))
     }
 
     func testNumeric() {

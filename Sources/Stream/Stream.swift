@@ -6,9 +6,9 @@ public enum StreamError: Error {
 public protocol Stream: InputStream, OutputStream {}
 
 public protocol InputStream {
-    func read(to buffer: UnsafeMutableRawBufferPointer) throws -> Int
+    func read(to pointer: UnsafeMutableRawPointer, byteCount: Int) throws -> Int
 }
 
 public protocol OutputStream {
-    func write(_ bytes: UnsafeRawBufferPointer) throws -> Int
+    func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws -> Int
 }

@@ -3,18 +3,22 @@ import Test
 
 class BufferedStreamTests: TestCase {
     class TestInputStreamSequence: InputStream {
-        func read(to buffer: UnsafeMutableRawBufferPointer) throws -> Int {
-            for i in 0..<buffer.count {
-                buffer[i] = UInt8(truncatingIfNeeded: i)
+        func read(
+            to buffer: UnsafeMutableRawPointer, byteCount: Int
+        ) throws -> Int {
+            for i in 0..<byteCount {
+                buffer.advanced(by: i)
+                    .assumingMemoryBound(to: UInt8.self)
+                    .pointee = UInt8(truncatingIfNeeded: i)
             }
-            return buffer.count
+            return byteCount
         }
     }
 
     func testBufferedInputStream() {
         let baseStream = TestInputStreamSequence()
         var stream = BufferedInputStream(baseStream: baseStream, capacity: 10)
-        assertEqual(stream.storage.count, 10)
+        assertEqual(stream.allocated, 10)
         assertEqual(stream.count, 0)
 
         func read(count: Int) -> [UInt8] {
@@ -45,7 +49,7 @@ class BufferedStreamTests: TestCase {
     func testBufferedOutputStream() {
         let testStream = TestStream()
         let stream = BufferedOutputStream(baseStream: testStream, capacity: 10)
-        assertEqual(stream.storage.count, 10)
+        assertEqual(stream.allocated, 10)
         assertEqual(stream.buffered, 0)
 
         assertEqual(try stream.write([0,1,2,3,4]), 5)
@@ -108,21 +112,21 @@ class BufferedStreamTests: TestCase {
 
     func testBufferedInputStreamDefaultCapacity() {
         let stream = BufferedInputStream(baseStream: TestStream())
-        assertEqual(stream.storage.count, 0)
+        assertEqual(stream.allocated, 0)
         assertEqual(stream.count, 0)
     }
 
     func testBufferedOutputStreamDefaultCapacity() {
         let stream = BufferedOutputStream(baseStream: TestStream())
-        assertEqual(stream.storage.count, 4096)
+        assertEqual(stream.allocated, 4096)
         assertEqual(stream.buffered, 0)
     }
 
     func testBufferedStreamDefaultCapacity() {
         let stream = BufferedStream(baseStream: TestStream())
-        assertEqual(stream.inputStream.storage.count, 4096)
+        assertEqual(stream.inputStream.allocated, 4096)
         assertEqual(stream.inputStream.count, 0)
-        assertEqual(stream.outputStream.storage.count, 4096)
+        assertEqual(stream.outputStream.allocated, 4096)
         assertEqual(stream.outputStream.buffered, 0)
     }
 }

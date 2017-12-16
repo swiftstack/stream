@@ -7,7 +7,9 @@ extension MemoryStream {
 }
 
 public final class MemoryStream: Stream, Seekable {
-    var storage: UnsafeMutableRawBufferPointer
+    var storage: UnsafeMutableRawPointer
+    var allocated: Int
+
     let expandable: Bool
 
     public private(set) var position = 0
@@ -22,7 +24,7 @@ public final class MemoryStream: Stream, Seekable {
     }
 
     public var capacity: Int {
-        return storage.count
+        return allocated
     }
 
     public var isEOF: Bool {
@@ -31,29 +33,25 @@ public final class MemoryStream: Stream, Seekable {
 
     /// Valid until next reallocate
     public var buffer: UnsafeRawBufferPointer {
-        return UnsafeRawBufferPointer(storage)
-    }
-
-    /// Expandable stream
-    public init() {
-        self.expandable = true
-        self.storage = UnsafeMutableRawBufferPointer(start: nil, count: 0)
+        return UnsafeRawBufferPointer(start: storage, count: allocated)
     }
 
     /// Expandable stream with reserved capacity
-    public init(reservingCapacity capacity: Int) {
+    public init(reservingCapacity capacity: Int = 0) {
         self.expandable = true
-        self.storage = UnsafeMutableRawBufferPointer.allocate(
+        self.storage = UnsafeMutableRawPointer.allocate(
             byteCount: capacity,
             alignment: MemoryLayout<UInt>.alignment)
+        self.allocated = capacity
     }
 
     /// Non-resizable stream
     public init(capacity: Int) {
         self.expandable = false
-        self.storage = UnsafeMutableRawBufferPointer.allocate(
+        self.storage = UnsafeMutableRawPointer.allocate(
             byteCount: capacity,
             alignment: MemoryLayout<UInt>.alignment)
+        self.allocated = capacity
     }
 
     deinit {
@@ -79,56 +77,60 @@ public final class MemoryStream: Stream, Seekable {
         return try! read(upTo: Swift.min(remain, maxLength))
     }
 
-    public func read(upTo end: Int) throws -> UnsafeRawBufferPointer {
-        guard storage.baseAddress != nil else {
+    public func read(upTo count: Int) throws -> UnsafeRawBufferPointer {
+        guard allocated > 0 else {
             return UnsafeRawBufferPointer(start: nil, count: 0)
         }
-        guard remain >= end else {
+        guard remain >= count else {
             throw Error.insufficientData
         }
-        position += end
-        return UnsafeRawBufferPointer(
-            rebasing: storage[position-end..<position])
+        let start = storage.advanced(by: position)
+        position += count
+        return UnsafeRawBufferPointer(start: start, count: count)
     }
 
-    public func read(to buffer: UnsafeMutableRawBufferPointer) throws -> Int {
-        let bytes = read(buffer.count)
+    public func read(
+        to buffer: UnsafeMutableRawPointer,
+        byteCount: Int
+    ) throws -> Int {
+        let bytes = read(byteCount)
         guard bytes.count > 0 else {
             return 0
         }
-        buffer.copyMemory(from: bytes)
+        buffer.copyMemory(from: bytes.baseAddress!, byteCount: bytes.count)
         return bytes.count
     }
 
-    public func write(_ bytes: UnsafeRawBufferPointer) throws -> Int {
-        guard bytes.count > 0 else {
+    public func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws -> Int {
+        guard byteCount > 0 else {
             return 0
         }
-        let endIndex = position + bytes.count
+        let endIndex = position + byteCount
         try ensure(capacity: endIndex)
 
-        UnsafeMutableRawBufferPointer(rebasing: storage[position..<endIndex])
-            .copyMemory(from: bytes)
+        storage.advanced(by: position)
+            .copyMemory(from: bytes, byteCount: byteCount)
 
         position = endIndex
         if position > self.endIndex {
             self.endIndex = position
         }
 
-        return bytes.count
+        return byteCount
     }
 
     fileprivate func reallocate(byteCount: Int) {
-        let storage = UnsafeMutableRawBufferPointer.allocate(
+        let storage = UnsafeMutableRawPointer.allocate(
             byteCount: byteCount,
             alignment: MemoryLayout<UInt>.alignment)
-        storage.copyBytes(from: self.storage)
+        storage.copyMemory(from: self.storage, byteCount: allocated)
         self.storage.deallocate()
         self.storage = storage
+        self.allocated = byteCount
     }
 
     fileprivate func ensure(capacity count: Int) throws {
-        if _slowPath(count > storage.count) {
+        if _slowPath(count > allocated) {
             guard expandable else {
                 throw Error.notEnoughSpace
             }
@@ -142,13 +144,13 @@ public final class MemoryStream: Stream, Seekable {
 }
 
 extension MemoryStream {
-    public func write<T: Numeric>(_ value: T) throws {
+    public func write<T: BinaryInteger>(_ value: T) throws {
         var value = value
         _ = try write(UnsafeRawBufferPointer(
             start: &value, count: MemoryLayout<T>.size))
     }
 
-    public func read<T: Numeric>(_ type: T.Type) throws -> T {
+    public func read<T: BinaryInteger>(_ type: T.Type) throws -> T {
         let buffer = try read(upTo: MemoryLayout<T>.size)
         return buffer.baseAddress!.assumingMemoryBound(to: T.self).pointee
     }
