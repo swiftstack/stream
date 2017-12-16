@@ -28,6 +28,7 @@ public enum BufferError: Error {
 extension BufferedInputStream: BufferedInputStreamReader {
     /// Get the next 'count' bytes (if present)
     /// without advancing current read position
+    @_inlineable
     public func peek(count: Int) -> UnsafeRawBufferPointer? {
         guard count <= self.count else {
             return nil
@@ -38,7 +39,6 @@ extension BufferedInputStream: BufferedInputStreamReader {
     }
 
     @_versioned
-    @inline(__always)
     func feed() throws -> Int {
         guard writePosition < allocated else {
             throw BufferError.notEnoughSpace
@@ -50,11 +50,12 @@ extension BufferedInputStream: BufferedInputStreamReader {
         return read
     }
 
+    @_inlineable
     public func consume(count: Int) throws {
         _ = try read(count: count)
     }
 
-    @inline(__always)
+    @_inlineable
     @discardableResult
     public func consume(while predicate: (UInt8) -> Bool) throws -> Bool {
         try ensure(count: 1)
@@ -99,7 +100,7 @@ extension BufferedInputStream: BufferedInputStreamReader {
             count: count)
     }
 
-    @inline(__always)
+    @_inlineable
     public func read(while predicate: (UInt8) -> Bool) throws -> UnsafeRawBufferPointer? {
         var count = 0
         while true {
