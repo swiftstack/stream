@@ -7,19 +7,12 @@ public class BufferedInputStream<T: InputStream> {
 
     var expandable: Bool
 
-    public internal(set) var writePosition: Int = 0
-    public internal(set) var readPosition: Int = 0 {
-        @inline(__always) didSet {
-            if readPosition > 0, readPosition == writePosition {
-                readPosition = 0
-                writePosition = 0
-            }
-        }
-    }
+    public internal(set) var writePosition: UnsafeMutableRawPointer
+    public internal(set) var readPosition: UnsafeMutableRawPointer
 
     public var count: Int {
         @inline(__always) get {
-            return writePosition - readPosition
+            return readPosition.distance(to: writePosition)
         }
     }
 
@@ -29,7 +22,6 @@ public class BufferedInputStream<T: InputStream> {
         }
     }
 
-
     public init(baseStream: T, capacity: Int = 0, expandable: Bool = true) {
         self.baseStream = baseStream
         self.storage = UnsafeMutableRawPointer.allocate(
@@ -37,6 +29,9 @@ public class BufferedInputStream<T: InputStream> {
             alignment: MemoryLayout<UInt>.alignment)
         self.allocated = capacity
         self.expandable = expandable
+
+        self.readPosition = storage
+        self.writePosition = storage
     }
 
     deinit {
@@ -45,15 +40,14 @@ public class BufferedInputStream<T: InputStream> {
 }
 
 extension BufferedInputStream: InputStream {
-    var readPointer: UnsafeMutableRawPointer {
-        return storage.advanced(by: readPosition)
-    }
-
-    private func read(
-    _ count: Int
-    ) -> UnsafeMutableRawPointer {
-        let pointer = readPointer
+    @inline(__always)
+    private func read(_ count: Int) -> UnsafeMutableRawPointer {
+        let pointer = readPosition
         readPosition += count
+        if readPosition == writePosition {
+            readPosition = storage
+            writePosition = storage
+        }
         return pointer
     }
 
@@ -70,7 +64,8 @@ extension BufferedInputStream: InputStream {
         // we don't have enough data and can buffer the rest after read
         case -(allocated-1)..<0:
             let flushed = flush(to: buffer, byteCount: byteCount)
-            writePosition = try baseStream.read(to: storage, byteCount: allocated)
+            let bytesRead = try baseStream.read(to: storage, byteCount: allocated)
+            writePosition = self.storage + bytesRead
             let remain = min(count, byteCount - flushed)
             buffer.advanced(by: flushed)
                 .copyMemory(from: read(remain), byteCount: remain)
@@ -94,12 +89,10 @@ extension BufferedInputStream: InputStream {
         to buffer: UnsafeMutableRawPointer, byteCount: Int
     ) -> Int {
         assert(byteCount > self.count)
-        buffer.copyMemory(
-            from: storage.advanced(by: readPosition),
-            byteCount: count)
+        buffer.copyMemory(from: readPosition, byteCount: count)
         let flushed = count
-        readPosition = 0
-        writePosition = 0
+        readPosition = storage
+        writePosition = storage
         return flushed
     }
 }
