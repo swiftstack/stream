@@ -8,7 +8,14 @@ public class BufferedInputStream<T: InputStream> {
     var expandable: Bool
 
     public internal(set) var writePosition: UnsafeMutableRawPointer
-    public internal(set) var readPosition: UnsafeMutableRawPointer
+    public internal(set) var readPosition: UnsafeMutableRawPointer {
+        @inline(__always) didSet {
+            if readPosition == writePosition {
+                readPosition = storage
+                writePosition = storage
+            }
+        }
+    }
 
     public var count: Int {
         @inline(__always) get {
@@ -44,10 +51,6 @@ extension BufferedInputStream: InputStream {
     private func read(_ count: Int) -> UnsafeMutableRawPointer {
         let pointer = readPosition
         readPosition += count
-        if readPosition == writePosition {
-            readPosition = storage
-            writePosition = storage
-        }
         return pointer
     }
 
