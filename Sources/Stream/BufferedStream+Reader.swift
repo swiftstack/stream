@@ -1,12 +1,12 @@
 extension BufferedInputStream {
     @inline(__always)
     public func read(until byte: UInt8) throws -> UnsafeRawBufferPointer {
-        return try read(while: { $0 != byte })
+        return try read(while: { $0 != byte }, untilEnd: false)
     }
 
     @inline(__always)
     public func consume(until byte: UInt8) throws {
-        _ = try consume(while: { $0 != byte })
+        _ = try consume(while: { $0 != byte }, untilEnd: false)
     }
 
     @inline(__always)
@@ -52,12 +52,16 @@ extension BufferedInputStream {
     }
 
     @_inlineable
-    public func read(while predicate: (UInt8) -> Bool) throws -> UnsafeRawBufferPointer {
+    public func read(
+        while predicate: (UInt8) -> Bool,
+        untilEnd: Bool = true
+    ) throws -> UnsafeRawBufferPointer {
         var read = 0
         while true {
             if read == self.count {
                 try ensure(count: 1)
                 guard try feed() > 0 else {
+                    if untilEnd { break }
                     throw StreamError.insufficientData
                 }
             }
@@ -75,12 +79,16 @@ extension BufferedInputStream {
     }
 
     @_inlineable
-    public func consume(while predicate: (UInt8) -> Bool) throws {
+    public func consume(
+        while predicate: (UInt8) -> Bool,
+        untilEnd: Bool = true
+    ) throws {
         try ensure(count: 1)
         while true {
             if self.count == 0 {
                 guard try feed() > 0 else {
-                    return
+                    if untilEnd { return }
+                    throw StreamError.insufficientData
                 }
             }
             let byte = readPosition.assumingMemoryBound(to: UInt8.self)
