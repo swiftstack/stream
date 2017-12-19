@@ -5,9 +5,13 @@ extension BufferedInputStream {
     }
 
     @inline(__always)
-    @discardableResult
-    public func consume(until byte: UInt8) throws -> Bool {
-        return try consume(while: { $0 != byte })
+    public func consume(until byte: UInt8) throws {
+        _ = try consume(while: { $0 != byte })
+    }
+
+    @inline(__always)
+    public func consume(count: Int) throws {
+        _ = try read(count: count)
     }
 }
 
@@ -23,29 +27,6 @@ extension BufferedInputStream {
             }
         }
         return UnsafeRawBufferPointer(start: readPosition, count: count)
-    }
-
-    @_inlineable
-    public func consume(count: Int) throws {
-        _ = try read(count: count)
-    }
-
-    @_inlineable
-    @discardableResult
-    public func consume(while predicate: (UInt8) -> Bool) throws -> Bool {
-        try ensure(count: 1)
-        while true {
-            if self.count == 0 {
-                guard try feed() > 0, self.count > 0 else {
-                    return false
-                }
-            }
-            let byte = readPosition.assumingMemoryBound(to: UInt8.self)
-            if !predicate(byte.pointee) {
-                return true
-            }
-            readPosition += 1
-        }
     }
 
     public func read(count: Int) throws -> UnsafeRawBufferPointer {
@@ -93,6 +74,24 @@ extension BufferedInputStream {
         }
         defer { readPosition += read }
         return UnsafeRawBufferPointer(start: readPosition, count: read)
+    }
+
+    @_inlineable
+    @discardableResult
+    public func consume(while predicate: (UInt8) -> Bool) throws -> Bool {
+        try ensure(count: 1)
+        while true {
+            if self.count == 0 {
+                guard try feed() > 0 else {
+                    return false
+                }
+            }
+            let byte = readPosition.assumingMemoryBound(to: UInt8.self)
+            if !predicate(byte.pointee) {
+                return true
+            }
+            readPosition += 1
+        }
     }
 
     @_versioned

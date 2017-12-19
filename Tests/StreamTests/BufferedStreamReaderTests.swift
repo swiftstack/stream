@@ -242,10 +242,7 @@ class BufferedStreamReaderTests: TestCase {
             assertEqual(input.readPosition, input.storage)
             assertEqual(input.writePosition, input.storage)
 
-            guard try input.consume(while: { $0 == 1 || $0 == 2 }) else {
-                fail()
-                return
-            }
+            try input.consume(while: { $0 == 1 || $0 == 2 })
 
             assertEqual(input.readPosition, input.storage)
             assertEqual(input.writePosition, input.storage + 2)
@@ -267,10 +264,7 @@ class BufferedStreamReaderTests: TestCase {
             assertEqual(input.readPosition, input.storage)
             assertEqual(input.writePosition, input.storage)
 
-            guard try input.consume(until: 3) else {
-                fail()
-                return
-            }
+            try input.consume(until: 3)
 
             assertEqual(input.readPosition, input.storage)
             assertEqual(input.writePosition, input.storage + 2)
