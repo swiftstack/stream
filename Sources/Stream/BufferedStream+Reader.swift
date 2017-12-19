@@ -11,11 +11,6 @@ extension BufferedInputStream {
     }
 }
 
-public enum BufferError: Error {
-    case notEnoughSpace
-    case insufficientData
-}
-
 extension BufferedInputStream {
     /// Get the next 'count' bytes (if present)
     /// without advancing current read position
@@ -28,18 +23,6 @@ extension BufferedInputStream {
             }
         }
         return UnsafeRawBufferPointer(start: readPosition, count: count)
-    }
-
-    @_versioned
-    func feed() throws -> Int {
-        guard used < allocated else {
-            throw BufferError.notEnoughSpace
-        }
-        let read = try baseStream.read(
-            to: writePosition,
-            byteCount: allocated - used)
-        writePosition += read
-        return read
     }
 
     @_inlineable
@@ -80,7 +63,7 @@ extension BufferedInputStream {
             }
 
             guard count <= self.count else {
-                throw BufferError.insufficientData
+                throw StreamError.insufficientData
             }
         }
         defer {
@@ -91,23 +74,37 @@ extension BufferedInputStream {
 
     @_inlineable
     public func read(while predicate: (UInt8) -> Bool) throws -> UnsafeRawBufferPointer {
-        var count = 0
+        var read = 0
         while true {
-            if readPosition + count == writePosition {
+            if read == self.count {
                 try ensure(count: 1)
                 guard try feed() > 0 else {
-                    throw Error.insufficientData
+                    throw StreamError.insufficientData
                 }
             }
-            let byte = readPosition.advanced(by: count)
+            let byte = readPosition
+                .advanced(by: read)
                 .assumingMemoryBound(to: UInt8.self)
-            if !predicate(byte.pointee) {
+                .pointee
+            if !predicate(byte) {
                 break
             }
-            count += 1
+            read += 1
         }
-        defer { readPosition += count }
-        return UnsafeRawBufferPointer(start: readPosition, count: count)
+        defer { readPosition += read }
+        return UnsafeRawBufferPointer(start: readPosition, count: read)
+    }
+
+    @_versioned
+    func feed() throws -> Int {
+        guard used < allocated else {
+            throw StreamError.notEnoughSpace
+        }
+        let read = try baseStream.read(
+            to: writePosition,
+            byteCount: allocated - used)
+        writePosition += read
+        return read
     }
 
     @_versioned
@@ -119,7 +116,7 @@ extension BufferedInputStream {
         switch expandable {
         case false:
             guard count + requested <= allocated else {
-                throw BufferError.notEnoughSpace
+                throw StreamError.notEnoughSpace
             }
             shift()
         case true where count + requested <= allocated / 2:

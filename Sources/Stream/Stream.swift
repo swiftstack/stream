@@ -1,6 +1,6 @@
 public enum StreamError: Error {
-    case readLessThenRequired
-    case writtenLessThenRequired
+    case notEnoughSpace
+    case insufficientData
 }
 
 public protocol Stream: InputStream, OutputStream {}
