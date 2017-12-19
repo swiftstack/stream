@@ -1,13 +1,4 @@
-public protocol BufferedInputStreamReader {
-    var count: Int { get }
-    func peek(count: Int) -> UnsafeRawBufferPointer?
-    func consume(count: Int) throws
-    func consume(while predicate: (UInt8) -> Bool) throws -> Bool
-    func read(count: Int) throws -> UnsafeRawBufferPointer
-    func read(while predicate: (UInt8) -> Bool) throws -> UnsafeRawBufferPointer?
-}
-
-extension BufferedInputStreamReader {
+extension BufferedInputStream {
     @inline(__always)
     public func read(until byte: UInt8) throws -> UnsafeRawBufferPointer? {
         return try read(while: {$0 != byte})
@@ -25,7 +16,7 @@ public enum BufferError: Error {
     case insufficientData
 }
 
-extension BufferedInputStream: BufferedInputStreamReader {
+extension BufferedInputStream {
     /// Get the next 'count' bytes (if present)
     /// without advancing current read position
     @_inlineable
