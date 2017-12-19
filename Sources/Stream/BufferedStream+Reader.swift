@@ -1,6 +1,6 @@
 extension BufferedInputStream {
     @inline(__always)
-    public func read(until byte: UInt8) throws -> UnsafeRawBufferPointer? {
+    public func read(until byte: UInt8) throws -> UnsafeRawBufferPointer {
         return try read(while: {$0 != byte})
     }
 
@@ -87,13 +87,13 @@ extension BufferedInputStream {
     }
 
     @_inlineable
-    public func read(while predicate: (UInt8) -> Bool) throws -> UnsafeRawBufferPointer? {
+    public func read(while predicate: (UInt8) -> Bool) throws -> UnsafeRawBufferPointer {
         var count = 0
         while true {
             if readPosition + count == writePosition {
                 try ensure(count: 1)
                 guard try feed() > 0 else {
-                    return nil
+                    throw Error.insufficientData
                 }
             }
             let byte = readPosition.advanced(by: count)
