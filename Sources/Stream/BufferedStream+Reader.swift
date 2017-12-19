@@ -75,18 +75,17 @@ extension BufferedInputStream {
     }
 
     @_inlineable
-    @discardableResult
-    public func consume(while predicate: (UInt8) -> Bool) throws -> Bool {
+    public func consume(while predicate: (UInt8) -> Bool) throws {
         try ensure(count: 1)
         while true {
             if self.count == 0 {
                 guard try feed() > 0 else {
-                    return false
+                    return
                 }
             }
             let byte = readPosition.assumingMemoryBound(to: UInt8.self)
             if !predicate(byte.pointee) {
-                return true
+                return
             }
             readPosition += 1
         }
