@@ -20,9 +20,12 @@ extension BufferedInputStream {
     /// Get the next 'count' bytes (if present)
     /// without advancing current read position
     @_inlineable
-    public func peek(count: Int) -> UnsafeRawBufferPointer? {
-        guard count <= self.count else {
-            return nil
+    public func peek(count: Int) throws -> UnsafeRawBufferPointer? {
+        if count > self.count {
+            try ensure(count: count)
+            guard try feed() > 0 && self.count >= count else {
+                return nil
+            }
         }
         return UnsafeRawBufferPointer(start: readPosition, count: count)
     }
