@@ -33,20 +33,21 @@ class BufferedStreamReaderTests: TestCase {
         let input = BufferedInputStream(baseStream: TestStream())
         assertEqual(input.writePosition, input.storage)
         assertEqual(input.readPosition, input.storage)
-        assertEqual(input.allocated, 0)
+        assertEqual(input.allocated, 256)
         assertEqual(input.buffered, 0)
+        assertEqual(input.expandable, true)
     }
 
     func testRead() {
         do {
-            let input = BufferedInputStream(baseStream: TestStream())
+            let input = BufferedInputStream(baseStream: TestStream(), capacity: 1)
             assertEqual(input.expandable, true)
-            assertEqual(input.allocated, 0)
+            assertEqual(input.allocated, 1)
 
             var buffer = try input.read(count: 10)
             assertEqual([UInt8](buffer), [UInt8](repeating: 1, count: 10))
             assertEqual(input.readPosition, input.storage + 10)
-            // default size(0) is < requested,
+            // allocated(1) < requested,
             // so we reserve requested(10) * 2
             assertEqual(input.writePosition, input.storage + 20)
 
@@ -238,16 +239,23 @@ class BufferedStreamReaderTests: TestCase {
 
     func testConsumeWhile() {
         do {
-            let input = BufferedInputStream(baseStream: TestStream())
+            let input = BufferedInputStream(baseStream: TestStream(), capacity: 2)
             assertEqual(input.readPosition, input.storage)
             assertEqual(input.writePosition, input.storage)
+            assertEqual(input.allocated, 2)
+            assertEqual(input.buffered, 0)
 
             try input.consume(while: { $0 == 1 || $0 == 2 })
 
             assertEqual(input.readPosition, input.storage)
             assertEqual(input.writePosition, input.storage + 2)
+            assertEqual(input.allocated, 2)
+            assertEqual(input.buffered, 2)
 
             let buffer = try input.read(count: 10)
+            assertEqual(input.allocated, 24)
+            assertEqual(input.buffered, 14)
+
             assertEqual([UInt8](buffer),
                 [UInt8](repeating: 3, count: 2)
                     + [UInt8](repeating: 4, count: 8))
@@ -260,16 +268,23 @@ class BufferedStreamReaderTests: TestCase {
 
     func testConsumeUntil() {
         do {
-            let input = BufferedInputStream(baseStream: TestStream())
+            let input = BufferedInputStream(baseStream: TestStream(), capacity: 2)
             assertEqual(input.readPosition, input.storage)
             assertEqual(input.writePosition, input.storage)
+            assertEqual(input.allocated, 2)
+            assertEqual(input.buffered, 0)
 
             try input.consume(until: 3)
 
             assertEqual(input.readPosition, input.storage)
             assertEqual(input.writePosition, input.storage + 2)
+            assertEqual(input.allocated, 2)
+            assertEqual(input.buffered, 2)
 
             let buffer = try input.read(count: 10)
+            assertEqual(input.allocated, 24)
+            assertEqual(input.buffered, 14)
+
             assertEqual([UInt8](buffer),
                 [UInt8](repeating: 3, count: 2)
                     + [UInt8](repeating: 4, count: 8))

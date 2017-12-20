@@ -112,13 +112,13 @@ class BufferedStreamTests: TestCase {
 
     func testBufferedInputStreamDefaultCapacity() {
         let stream = BufferedInputStream(baseStream: TestStream())
-        assertEqual(stream.allocated, 0)
+        assertEqual(stream.allocated, 256)
         assertEqual(stream.buffered, 0)
     }
 
     func testBufferedOutputStreamDefaultCapacity() {
         let stream = BufferedOutputStream(baseStream: TestStream())
-        assertEqual(stream.allocated, 4096)
+        assertEqual(stream.allocated, 256)
         assertEqual(stream.buffered, 0)
     }
 

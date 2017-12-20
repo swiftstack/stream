@@ -29,7 +29,10 @@ public class BufferedInputStream<T: InputStream> {
         }
     }
 
-    public init(baseStream: T, capacity: Int = 0, expandable: Bool = true) {
+    public init(baseStream: T, capacity: Int = 256, expandable: Bool = true) {
+        guard capacity > 0 else {
+            fatalError("capacity must be > 0")
+        }
         self.baseStream = baseStream
         self.storage = UnsafeMutableRawPointer.allocate(
             byteCount: capacity,
@@ -117,7 +120,7 @@ public class BufferedOutputStream<T: OutputStream> {
         return allocated - buffered
     }
 
-    public init(baseStream: T, capacity: Int = 4096) {
+    public init(baseStream: T, capacity: Int = 256) {
         self.baseStream = baseStream
         self.storage = UnsafeMutableRawPointer.allocate(
             byteCount: capacity,
