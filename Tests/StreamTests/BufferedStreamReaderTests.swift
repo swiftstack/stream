@@ -29,15 +29,6 @@ class BufferedStreamReaderTests: TestCase {
         }
     }
 
-    func testInitialState() {
-        let input = BufferedInputStream(baseStream: TestStream())
-        assertEqual(input.writePosition, input.storage)
-        assertEqual(input.readPosition, input.storage)
-        assertEqual(input.allocated, 256)
-        assertEqual(input.buffered, 0)
-        assertEqual(input.expandable, true)
-    }
-
     func testRead() {
         do {
             let input = BufferedInputStream(baseStream: TestStream(), capacity: 1)
@@ -68,7 +59,7 @@ class BufferedStreamReaderTests: TestCase {
             // reallocate x2 because the content is > capacity / 2
             buffer = try input.read(count: 20)
             assertEqual(
-                [UInt8](buffer), 
+                [UInt8](buffer),
                 [UInt8](repeating: 2, count: 15) +
                     [UInt8](repeating: 3, count: 5))
             assertEqual(input.readPosition, input.storage + 20)
@@ -296,31 +287,18 @@ class BufferedStreamReaderTests: TestCase {
     }
 
     func testConsumeByte() {
-        let input = BufferedInputStream(baseStream: TestStream(), capacity: 2)
-        assertEqual(input.readPosition, input.storage)
-        assertEqual(input.writePosition, input.storage)
-        assertEqual(input.allocated, 2)
-        assertEqual(input.buffered, 0)
-
-        assertTrue(try input.consume(1))
-        assertEqual(input.buffered, 1)
-
-        assertTrue(try input.consume(1))
-        assertEqual(input.buffered, 0)
-
-        assertTrue(try input.consume(2))
-        assertEqual(input.buffered, 1)
-
-        assertFalse(try input.consume(3))
-        assertEqual(input.buffered, 1)
-    }
-
-    func testConsumeByteStreamExhaustion() {
         let stream =  TestStream(generateBytesCount: 2)
-        let input = BufferedInputStream(baseStream: stream, capacity: 2)
+        let input = BufferedInputStream(baseStream: stream)
+        assertEqual(input.buffered, 0)
 
-        assertTrue(try input.consume(1))
-        assertTrue(try input.consume(1))
+        assertTrue(try input.consume(UInt8(1)))
+        assertEqual(input.buffered, 1)
+
+        assertFalse(try input.consume(UInt8(2)))
+        assertEqual(input.buffered, 1)
+
+        assertTrue(try input.consume(UInt8(1)))
+        assertEqual(input.buffered, 0)
 
         assertThrowsError(try input.consume(1)) { error in
             assertEqual(error as? StreamError, .insufficientData)
