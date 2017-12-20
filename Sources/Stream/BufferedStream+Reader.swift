@@ -104,7 +104,6 @@ extension BufferedInputStream {
         while predicate: (UInt8) -> Bool,
         allowingExhaustion: Bool = true
     ) throws {
-        try ensure(count: 1)
         while true {
             if buffered == 0 {
                 guard try feed() > 0 else {
