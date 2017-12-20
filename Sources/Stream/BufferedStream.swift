@@ -17,7 +17,7 @@ public class BufferedInputStream<T: InputStream> {
         }
     }
 
-    public var count: Int {
+    public var buffered: Int {
         @inline(__always) get {
             return readPosition.distance(to: writePosition)
         }
@@ -57,7 +57,7 @@ extension BufferedInputStream: InputStream {
     public func read(
         to buffer: UnsafeMutableRawPointer, byteCount: Int
     ) throws -> Int {
-        switch self.count - byteCount {
+        switch buffered - byteCount {
 
         // we have buffered more than requested
         case 0...:
@@ -69,14 +69,14 @@ extension BufferedInputStream: InputStream {
             let flushed = flush(to: buffer, byteCount: byteCount)
             let bytesRead = try baseStream.read(to: storage, byteCount: allocated)
             writePosition = self.storage + bytesRead
-            let remain = min(count, byteCount - flushed)
+            let remain = min(buffered, byteCount - flushed)
             buffer.advanced(by: flushed)
                 .copyMemory(from: read(remain), byteCount: remain)
             return flushed + remain
 
         // requested more than we can buffer, read directly into the buffer
         default:
-            guard self.count > 0 else {
+            guard buffered > 0 else {
                 return try baseStream.read(to: buffer, byteCount: byteCount)
             }
             let flushed = flush(to: buffer, byteCount: byteCount)
@@ -91,9 +91,9 @@ extension BufferedInputStream: InputStream {
     private func flush(
         to buffer: UnsafeMutableRawPointer, byteCount: Int
     ) -> Int {
-        assert(byteCount > self.count)
-        buffer.copyMemory(from: readPosition, byteCount: count)
-        let flushed = count
+        assert(byteCount > buffered)
+        buffer.copyMemory(from: readPosition, byteCount: buffered)
+        let flushed = buffered
         readPosition = storage
         writePosition = storage
         return flushed

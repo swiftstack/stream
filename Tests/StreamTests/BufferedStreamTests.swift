@@ -19,7 +19,7 @@ class BufferedStreamTests: TestCase {
         let baseStream = TestInputStreamSequence()
         var stream = BufferedInputStream(baseStream: baseStream, capacity: 10)
         assertEqual(stream.allocated, 10)
-        assertEqual(stream.count, 0)
+        assertEqual(stream.buffered, 0)
 
         func read(count: Int) -> [UInt8] {
             var buffer = [UInt8](repeating: 0, count: count)
@@ -28,22 +28,22 @@ class BufferedStreamTests: TestCase {
         }
 
         assertEqual(read(count: 5), [0,1,2,3,4])
-        assertEqual(stream.count, 5)
+        assertEqual(stream.buffered, 5)
         assertEqual(read(count: 2), [5,6])
-        assertEqual(stream.count, 3)
+        assertEqual(stream.buffered, 3)
         assertEqual(read(count: 13), [7,8,9,0,1,2,3,4,5,6,7,8,9])
-        assertEqual(stream.count, 0)
+        assertEqual(stream.buffered, 0)
 
         assertEqual(read(count: 10), [0,1,2,3,4,5,6,7,8,9])
-        assertEqual(stream.count, 0)
+        assertEqual(stream.buffered, 0)
 
         assertEqual(read(count: 13), [0,1,2,3,4,5,6,7,8,9,10,11,12])
-        assertEqual(stream.count, 0)
+        assertEqual(stream.buffered, 0)
 
         assertEqual(read(count: 9), [0,1,2,3,4,5,6,7,8])
-        assertEqual(stream.count, 1)
+        assertEqual(stream.buffered, 1)
         assertEqual(read(count: 13), [9,0,1,2,3,4,5,6,7,8,9,10,11])
-        assertEqual(stream.count, 0)
+        assertEqual(stream.buffered, 0)
     }
 
     func testBufferedOutputStream() {
@@ -103,17 +103,17 @@ class BufferedStreamTests: TestCase {
         assertEqual(stream.outputStream.buffered, 5)
 
         assertEqual(read(count: 5), [])
-        assertEqual(stream.inputStream.count, 0)
+        assertEqual(stream.inputStream.buffered, 0)
         assertNoThrow(try stream.flush())
         assertEqual(stream.outputStream.buffered, 0)
         assertEqual(read(count: 5), [0,1,2,3,4])
-        assertEqual(stream.inputStream.count, 0)
+        assertEqual(stream.inputStream.buffered, 0)
     }
 
     func testBufferedInputStreamDefaultCapacity() {
         let stream = BufferedInputStream(baseStream: TestStream())
         assertEqual(stream.allocated, 0)
-        assertEqual(stream.count, 0)
+        assertEqual(stream.buffered, 0)
     }
 
     func testBufferedOutputStreamDefaultCapacity() {
@@ -125,7 +125,7 @@ class BufferedStreamTests: TestCase {
     func testBufferedStreamDefaultCapacity() {
         let stream = BufferedStream(baseStream: TestStream())
         assertEqual(stream.inputStream.allocated, 4096)
-        assertEqual(stream.inputStream.count, 0)
+        assertEqual(stream.inputStream.buffered, 0)
         assertEqual(stream.outputStream.allocated, 4096)
         assertEqual(stream.outputStream.buffered, 0)
     }

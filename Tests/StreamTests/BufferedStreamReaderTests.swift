@@ -34,7 +34,7 @@ class BufferedStreamReaderTests: TestCase {
         assertEqual(input.writePosition, input.storage)
         assertEqual(input.readPosition, input.storage)
         assertEqual(input.allocated, 0)
-        assertEqual(input.count, 0)
+        assertEqual(input.buffered, 0)
     }
 
     func testRead() {

@@ -20,9 +20,9 @@ extension BufferedInputStream {
     /// without advancing current read position
     @_inlineable
     public func peek(count: Int) throws -> UnsafeRawBufferPointer? {
-        if count > self.count {
+        if count > buffered {
             try ensure(count: count)
-            guard try feed() > 0 && self.count >= count else {
+            guard try feed() > 0 && buffered >= count else {
                 return nil
             }
         }
@@ -30,20 +30,20 @@ extension BufferedInputStream {
     }
 
     public func read(count: Int) throws -> UnsafeRawBufferPointer {
-        if count > self.count {
+        if count > buffered {
             if count > allocated {
                 try ensure(count: count)
             } else {
-                try ensure(count: count - self.count)
+                try ensure(count: count - buffered)
             }
 
-            while self.count < count {
+            while buffered < count {
                 if try feed() == 0 {
                     break
                 }
             }
 
-            guard count <= self.count else {
+            guard count <= buffered else {
                 throw StreamError.insufficientData
             }
         }
@@ -58,7 +58,7 @@ extension BufferedInputStream {
     ) throws -> UnsafeRawBufferPointer {
         var read = 0
         while true {
-            if read == self.count {
+            if read == buffered {
                 try ensure(count: 1)
                 guard try feed() > 0 else {
                     if untilEnd { break }
@@ -85,7 +85,7 @@ extension BufferedInputStream {
     ) throws {
         try ensure(count: 1)
         while true {
-            if self.count == 0 {
+            if buffered == 0 {
                 guard try feed() > 0 else {
                     if untilEnd { return }
                     throw StreamError.insufficientData
@@ -119,26 +119,26 @@ extension BufferedInputStream {
 
         switch expandable {
         case false:
-            guard count + requested <= allocated else {
+            guard buffered + requested <= allocated else {
                 throw StreamError.notEnoughSpace
             }
             shift()
-        case true where count + requested <= allocated / 2:
+        case true where buffered + requested <= allocated / 2:
             shift()
         default:
-            reallocate(byteCount: (count + requested) * 2)
+            reallocate(byteCount: (buffered + requested) * 2)
         }
     }
 
     func shift() {
-        let count = self.count
+        let count = buffered
         storage.copyMemory(from: readPosition, byteCount: count)
         readPosition = storage
         writePosition = storage + count
     }
 
     func reallocate(byteCount: Int) {
-        let count = self.count
+        let count = buffered
         let storage = UnsafeMutableRawPointer.allocate(
             byteCount: byteCount,
             alignment: MemoryLayout<UInt>.alignment)
