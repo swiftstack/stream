@@ -167,6 +167,21 @@ class BufferedStreamReaderTests: TestCase {
         }
     }
 
+    func testReadWhileAllowingExhaustion() {
+        let stream = TestStream(generateBytesCount: 5)
+        let input = BufferedInputStream(baseStream: stream, capacity: 5)
+
+        assertThrowsError(try input.read(
+            while: { $0 == 1 },
+            allowingExhaustion: false))
+
+        assertEqual(input.buffered, 0)
+
+        assertNoThrow(try input.read(
+            while: { $0 == 1 },
+            allowingExhaustion: true))
+    }
+
     func testReadUntil() {
         do {
             let input = BufferedInputStream(baseStream: TestStream(), capacity: 5)
