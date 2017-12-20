@@ -23,7 +23,9 @@ extension BufferedInputStream {
         }
         return UnsafeRawBufferPointer(start: readPosition, count: count)
     }
+}
 
+extension BufferedInputStream {
     public func read(count: Int) throws -> UnsafeRawBufferPointer {
         if count > buffered {
             if count > allocated {
@@ -72,7 +74,9 @@ extension BufferedInputStream {
         defer { readPosition += read }
         return UnsafeRawBufferPointer(start: readPosition, count: read)
     }
+}
 
+extension BufferedInputStream {
     public func consume(count: Int) throws {
         guard buffered < count else {
             readPosition += count
@@ -115,7 +119,9 @@ extension BufferedInputStream {
             readPosition += 1
         }
     }
+}
 
+extension BufferedInputStream {
     @_versioned
     func feed() throws -> Int {
         guard used < allocated else {
