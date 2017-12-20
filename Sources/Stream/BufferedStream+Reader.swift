@@ -8,11 +8,6 @@ extension BufferedInputStream {
     public func consume(until byte: UInt8) throws {
         _ = try consume(while: { $0 != byte }, untilEnd: false)
     }
-
-    @inline(__always)
-    public func consume(count: Int) throws {
-        _ = try read(count: count)
-    }
 }
 
 extension BufferedInputStream {
@@ -76,6 +71,28 @@ extension BufferedInputStream {
         }
         defer { readPosition += read }
         return UnsafeRawBufferPointer(start: readPosition, count: read)
+    }
+
+    public func consume(count: Int) throws {
+        guard buffered < count else {
+            readPosition += count
+            return
+        }
+
+        var rest = count - buffered
+        reset()
+
+        if rest > allocated {
+            reallocate(byteCount: rest)
+        }
+
+        var read = 0
+        while rest > 0 {
+            read = try baseStream.read(to: storage, byteCount: allocated)
+            rest -= read
+        }
+        readPosition = storage + (-rest)
+        writePosition = storage + read
     }
 
     @_inlineable

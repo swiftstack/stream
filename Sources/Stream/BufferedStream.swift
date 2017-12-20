@@ -94,9 +94,14 @@ extension BufferedInputStream: InputStream {
         assert(byteCount > buffered)
         buffer.copyMemory(from: readPosition, byteCount: buffered)
         let flushed = buffered
+        reset()
+        return flushed
+    }
+
+    @inline(__always)
+    func reset() {
         readPosition = storage
         writePosition = storage
-        return flushed
     }
 }
 
