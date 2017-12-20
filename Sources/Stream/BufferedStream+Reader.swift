@@ -99,6 +99,24 @@ extension BufferedInputStream {
         writePosition = storage + read
     }
 
+    public func consume(_ byte: UInt8) throws -> Bool {
+        if buffered == 0 {
+            guard try feed() > 0 else {
+                throw StreamError.insufficientData
+            }
+        }
+
+        let next = readPosition
+            .assumingMemoryBound(to: UInt8.self)
+            .pointee
+
+        guard next == byte else {
+            return false
+        }
+        readPosition += 1
+        return true
+    }
+
     @_inlineable
     public func consume(
         while predicate: (UInt8) -> Bool,

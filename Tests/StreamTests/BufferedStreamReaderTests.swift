@@ -279,6 +279,38 @@ class BufferedStreamReaderTests: TestCase {
         }
     }
 
+    func testConsumeByte() {
+        let input = BufferedInputStream(baseStream: TestStream(), capacity: 2)
+        assertEqual(input.readPosition, input.storage)
+        assertEqual(input.writePosition, input.storage)
+        assertEqual(input.allocated, 2)
+        assertEqual(input.buffered, 0)
+
+        assertTrue(try input.consume(1))
+        assertEqual(input.buffered, 1)
+
+        assertTrue(try input.consume(1))
+        assertEqual(input.buffered, 0)
+
+        assertTrue(try input.consume(2))
+        assertEqual(input.buffered, 1)
+
+        assertFalse(try input.consume(3))
+        assertEqual(input.buffered, 1)
+    }
+
+    func testConsumeByteStreamExhaustion() {
+        let stream =  TestStream(generateBytesCount: 2)
+        let input = BufferedInputStream(baseStream: stream, capacity: 2)
+
+        assertTrue(try input.consume(1))
+        assertTrue(try input.consume(1))
+
+        assertThrowsError(try input.consume(1)) { error in
+            assertEqual(error as? StreamError, .insufficientData)
+        }
+    }
+
     func testConsumeWhile() {
         do {
             let input = BufferedInputStream(baseStream: TestStream(), capacity: 2)
