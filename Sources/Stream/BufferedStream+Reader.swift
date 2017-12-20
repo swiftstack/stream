@@ -26,6 +26,19 @@ extension BufferedInputStream {
 }
 
 extension BufferedInputStream {
+    public func read() throws -> UInt8 {
+        if buffered == 0 {
+            guard try feed() > 0 else {
+                throw StreamError.insufficientData
+            }
+        }
+        let byte = readPosition
+            .assumingMemoryBound(to: UInt8.self)
+            .pointee
+        readPosition += 1
+        return byte
+    }
+
     public func read(count: Int) throws -> UnsafeRawBufferPointer {
         if count > buffered {
             if count > allocated {

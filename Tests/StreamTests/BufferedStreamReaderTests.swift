@@ -150,6 +150,20 @@ class BufferedStreamReaderTests: TestCase {
         }
     }
 
+    func testReadByte() {
+        let stream = TestStream(generateBytesCount: 4)
+        let input = BufferedInputStream(baseStream: stream, capacity: 2)
+
+        assertEqual(try input.read(), 1)
+        assertEqual(try input.read(), 1)
+        assertEqual(try input.read(), 2)
+        assertEqual(try input.read(), 2)
+
+        assertThrowsError(try input.read()) { error in
+            assertEqual(error as? StreamError, .insufficientData)
+        }
+    }
+
     func testReadWhile() {
         do {
             let input = BufferedInputStream(baseStream: TestStream(), capacity: 5)
@@ -173,7 +187,9 @@ class BufferedStreamReaderTests: TestCase {
 
         assertThrowsError(try input.read(
             while: { $0 == 1 },
-            allowingExhaustion: false))
+            allowingExhaustion: false)) { error in
+                assertEqual(error as? StreamError, .insufficientData)
+        }
 
         assertEqual(input.buffered, 0)
 
