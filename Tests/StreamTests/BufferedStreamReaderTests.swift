@@ -237,6 +237,33 @@ class BufferedStreamReaderTests: TestCase {
         }
     }
 
+    func testConsumeNotExpandable() {
+        do {
+            let input = BufferedInputStream(
+                baseStream: TestStream(),
+                capacity: 10,
+                expandable: false)
+            assertEqual(input.readPosition, input.storage)
+            assertEqual(input.writePosition, input.storage)
+            assertEqual(input.expandable, false)
+            assertEqual(input.allocated, 10)
+
+            try input.consume(count: 15)
+
+            assertEqual(input.readPosition, input.storage + 5)
+            assertEqual(input.writePosition, input.storage + 10)
+            assertEqual(input.expandable, false)
+            assertEqual(input.allocated, 10)
+
+            let buffer = try input.read(count: 5)
+            assertEqual([UInt8](buffer), [UInt8](repeating: 2, count: 5))
+            assertEqual(input.readPosition, input.storage)
+            assertEqual(input.writePosition, input.storage)
+        } catch {
+            fail(String(describing: error))
+        }
+    }
+
     func testConsumeWhile() {
         do {
             let input = BufferedInputStream(baseStream: TestStream(), capacity: 2)
