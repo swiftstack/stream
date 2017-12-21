@@ -114,7 +114,7 @@ public class BufferedOutputStream<T: OutputStream> {
     let storage: UnsafeMutableRawPointer
     let allocated: Int
 
-    var buffered: Int
+    public internal(set) var buffered: Int
 
     var available: Int {
         return allocated - buffered
