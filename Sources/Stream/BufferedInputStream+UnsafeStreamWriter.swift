@@ -1,4 +1,4 @@
-extension BufferedOutputStream {
+extension BufferedOutputStream: UnsafeStreamWriter {
     public func write(_ byte: UInt8) throws {
         if available <= 0 {
             try flush()

@@ -1,18 +1,6 @@
-extension BufferedInputStream {
-    @inline(__always)
-    public func read(until byte: UInt8) throws -> UnsafeRawBufferPointer {
-        return try read(while: { $0 != byte }, allowingExhaustion: false)
-    }
-
-    @inline(__always)
-    public func consume(until byte: UInt8) throws {
-        _ = try consume(while: { $0 != byte }, allowingExhaustion: false)
-    }
-}
+extension BufferedInputStream: UnsafeStreamReader {}
 
 extension BufferedInputStream {
-    /// Get the next 'count' bytes (if present)
-    /// without advancing current read position
     @_inlineable
     public func peek(count: Int) throws -> UnsafeRawBufferPointer? {
         if count > buffered {
