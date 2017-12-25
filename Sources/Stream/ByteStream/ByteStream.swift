@@ -9,7 +9,8 @@ public class InputByteStream: InputStream {
 
     @inline(__always)
     public func read(
-        to pointer: UnsafeMutableRawPointer, byteCount: Int
+        to pointer: UnsafeMutableRawPointer,
+        byteCount: Int
     ) throws -> Int {
         let count = min(bytes.count - position, byteCount)
         let source = UnsafeRawPointer(bytes).advanced(by: position)
@@ -26,7 +27,7 @@ public class OutputByteStream: OutputStream {
         return bytes.count
     }
 
-    public init(reservingCapacity capacity: Int = 1024) {
+    public init(reservingCapacity capacity: Int = 256) {
         bytes = []
         bytes.reserveCapacity(capacity)
     }
@@ -36,5 +37,26 @@ public class OutputByteStream: OutputStream {
         let buffer = UnsafeRawBufferPointer(start: bytes, count: byteCount)
         self.bytes.append(contentsOf: buffer)
         return byteCount
+    }
+}
+
+public class ByteStream {
+    public let inputStream: InputByteStream
+    public let outputStream: OutputByteStream
+
+    init(inputStream: InputByteStream, outputStream: OutputByteStream) {
+        self.inputStream = inputStream
+        self.outputStream = outputStream
+    }
+
+    func read(
+        to pointer: UnsafeMutableRawPointer,
+        byteCount: Int
+    ) throws -> Int {
+        return try inputStream.read(to: pointer, byteCount: byteCount)
+    }
+
+    func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws -> Int {
+        return try outputStream.write(bytes, byteCount: byteCount)
     }
 }
