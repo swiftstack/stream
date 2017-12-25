@@ -40,23 +40,23 @@ public class OutputByteStream: OutputStream {
     }
 }
 
-public class ByteStream {
+public class ByteStream: Stream {
     public let inputStream: InputByteStream
     public let outputStream: OutputByteStream
 
-    init(inputStream: InputByteStream, outputStream: OutputByteStream) {
+    public init(inputStream: InputByteStream, outputStream: OutputByteStream) {
         self.inputStream = inputStream
         self.outputStream = outputStream
     }
 
-    func read(
+    public func read(
         to pointer: UnsafeMutableRawPointer,
         byteCount: Int
     ) throws -> Int {
         return try inputStream.read(to: pointer, byteCount: byteCount)
     }
 
-    func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws -> Int {
+    public func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws -> Int {
         return try outputStream.write(bytes, byteCount: byteCount)
     }
 }
