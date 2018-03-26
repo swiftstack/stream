@@ -1,10 +1,17 @@
 extension InputStream {
-    @inline(__always)
+    @_inlineable
     public func read<T: BinaryInteger>(_ type: T.Type) throws -> T {
         var result: T = 0
-        try withUnsafeMutableBytes(of: &result) { bytes in
-            guard try read(to: bytes) == MemoryLayout<T>.size else {
-                throw StreamError.insufficientData
+        let size = MemoryLayout<T>.size
+        try withUnsafeMutablePointer(to: &result) { pointer in
+            var total = 0
+            while total < size {
+                let pointer = pointer.advanced(by: total)
+                let read = try self.read(to: pointer, byteCount: size - total)
+                guard read > 0 else {
+                    throw StreamError.insufficientData
+                }
+                total += read
             }
         }
         return result
@@ -12,12 +19,19 @@ extension InputStream {
 }
 
 extension OutputStream {
-    @inline(__always)
+    @_inlineable
     public func write<T: BinaryInteger>(_ value: T) throws {
-        var value = value
-        try withUnsafeBytes(of: &value) { bytes in
-            guard try write(bytes) == MemoryLayout<T>.size else {
-                throw StreamError.insufficientData
+        var copy = value
+        let size = MemoryLayout<T>.size
+        try withUnsafePointer(to: &copy) { pointer in
+            var total = 0
+            while total < size {
+                let pointer = pointer.advanced(by: total)
+                let written = try write(pointer, byteCount: size - total)
+                guard written > 0 else {
+                    throw StreamError.notEnoughSpace
+                }
+                total += written
             }
         }
     }
