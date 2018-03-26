@@ -205,10 +205,12 @@ class BufferedStreamReaderTests: TestCase {
             assertEqual(input.expandable, true)
             assertEqual(input.allocated, 5)
 
-            let buffer = try input.read(until: 3)
-            assertEqual([UInt8](buffer),
-                [UInt8](repeating: 1, count: 5) +
-                    [UInt8](repeating: 2, count: 7))
+            try input.read(until: 3) { buffer in
+                let expected =
+                    [UInt8](repeating: 1, count: 5) +
+                    [UInt8](repeating: 2, count: 7)
+                assertEqual([UInt8](buffer), expected)
+            }
             assertEqual(input.readPosition, input.storage + 12)
             assertEqual(input.writePosition, input.storage + 26)
         } catch {

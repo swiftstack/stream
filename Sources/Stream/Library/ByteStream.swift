@@ -10,8 +10,8 @@ public class InputByteStream: InputStream {
     @inline(__always)
     public func read(
         to pointer: UnsafeMutableRawPointer,
-        byteCount: Int
-    ) throws -> Int {
+        byteCount: Int) throws -> Int
+    {
         let count = min(bytes.count - position, byteCount)
         let source = UnsafeRawPointer(bytes).advanced(by: position)
         pointer.copyMemory(from: source, byteCount: count)
@@ -33,9 +33,13 @@ public class OutputByteStream: OutputStream {
     }
 
     @inline(__always)
-    public func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws -> Int {
-        let buffer = UnsafeRawBufferPointer(start: bytes, count: byteCount)
-        self.bytes.append(contentsOf: buffer)
+    public func write(
+        from buffer: UnsafeRawPointer,
+        byteCount: Int) throws -> Int
+    {
+        bytes.append(contentsOf: UnsafeRawBufferPointer(
+            start: buffer,
+            count: byteCount))
         return byteCount
     }
 }
@@ -51,12 +55,15 @@ public class ByteStream: Stream {
 
     public func read(
         to pointer: UnsafeMutableRawPointer,
-        byteCount: Int
-    ) throws -> Int {
+        byteCount: Int) throws -> Int
+    {
         return try inputStream.read(to: pointer, byteCount: byteCount)
     }
 
-    public func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws -> Int {
-        return try outputStream.write(bytes, byteCount: byteCount)
+    public func write(
+        from buffer: UnsafeRawPointer,
+        byteCount: Int) throws -> Int
+    {
+        return try outputStream.write(from: buffer, byteCount: byteCount)
     }
 }

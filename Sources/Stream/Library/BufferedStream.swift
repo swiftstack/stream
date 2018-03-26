@@ -138,12 +138,15 @@ public class BufferedOutputStream<T: OutputStream> {
 }
 
 extension BufferedOutputStream: OutputStream {
-    public func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws -> Int {
+    public func write(
+        from buffer: UnsafeRawPointer,
+        byteCount: Int) throws -> Int
+    {
         switch available - byteCount {
         // the bytes fit into the buffer
         case 0...:
             storage.advanced(by: buffered)
-                .copyMemory(from: bytes, byteCount: byteCount)
+                .copyMemory(from: buffer, byteCount: byteCount)
             buffered += byteCount
             if buffered == allocated {
                 try flush()
@@ -154,10 +157,10 @@ extension BufferedOutputStream: OutputStream {
         case -(allocated-1)..<0:
             let count = available
             storage.advanced(by: buffered)
-                .copyMemory(from: bytes, byteCount: count)
+                .copyMemory(from: buffer, byteCount: count)
             buffered += count
             try flush()
-            let rest = bytes.advanced(by: count)
+            let rest = buffer.advanced(by: count)
             storage.copyMemory(from: rest, byteCount: byteCount - count)
             buffered += byteCount - count
             return byteCount
@@ -167,7 +170,7 @@ extension BufferedOutputStream: OutputStream {
             if buffered > 0 {
                 try flush()
             }
-            return try baseStream.write(bytes, byteCount: byteCount)
+            return try baseStream.write(from: buffer, byteCount: byteCount)
         }
     }
 
@@ -176,7 +179,7 @@ extension BufferedOutputStream: OutputStream {
         var sent = 0
         while sent < buffered {
             sent += try baseStream.write(
-                storage.advanced(by: sent),
+                from: storage.advanced(by: sent),
                 byteCount: buffered - sent)
         }
         buffered = 0
@@ -198,16 +201,17 @@ public class BufferedStream<T: Stream>: Stream {
 
     @inline(__always)
     public func read(
-        to buffer: UnsafeMutableRawPointer, byteCount: Int
-    ) throws -> Int {
+        to buffer: UnsafeMutableRawPointer,
+        byteCount: Int) throws -> Int {
         return try inputStream.read(to: buffer, byteCount: byteCount)
     }
 
     @inline(__always)
     public func write(
-        _ bytes: UnsafeRawPointer, byteCount: Int
-    ) throws -> Int {
-        return try outputStream.write(bytes, byteCount: byteCount)
+        from buffer: UnsafeRawPointer,
+        byteCount: Int) throws -> Int
+    {
+        return try outputStream.write(from: buffer, byteCount: byteCount)
     }
 
     @inline(__always)

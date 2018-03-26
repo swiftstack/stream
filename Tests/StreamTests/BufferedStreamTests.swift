@@ -52,19 +52,19 @@ class BufferedStreamTests: TestCase {
         assertEqual(stream.allocated, 10)
         assertEqual(stream.buffered, 0)
 
-        assertEqual(try stream.write([0,1,2,3,4]), 5)
+        assertEqual(try stream.write(from: [0,1,2,3,4]), 5)
         assertEqual(stream.buffered, 5)
-        assertEqual(try stream.write([5,6]), 2)
+        assertEqual(try stream.write(from: [5,6]), 2)
         assertEqual(stream.buffered, 7)
-        assertEqual(try stream.write([7,8,9]), 3)
+        assertEqual(try stream.write(from: [7,8,9]), 3)
         assertEqual(stream.buffered, 0)
 
         assertEqual(testStream.storage, [0,1,2,3,4,5,6,7,8,9])
         testStream.storage = []
 
-        assertEqual(try stream.write([0,1,2,3,4,5,6,7,8]), 9)
+        assertEqual(try stream.write(from: [0,1,2,3,4,5,6,7,8]), 9)
         assertEqual(stream.buffered, 9)
-        assertEqual(try stream.write([9,0,1,2,3,4,5,6,7,8,9,10,11]), 13)
+        assertEqual(try stream.write(from: [9,0,1,2,3,4,5,6,7,8,9,10,11]), 13)
         assertEqual(stream.buffered, 0)
 
         assertEqual(testStream.storage, [
@@ -73,9 +73,9 @@ class BufferedStreamTests: TestCase {
         ])
         testStream.storage = []
 
-        assertEqual(try stream.write([0,1,2,3,4,5,6,7,8]), 9)
+        assertEqual(try stream.write(from: [0,1,2,3,4,5,6,7,8]), 9)
         assertEqual(stream.buffered, 9)
-        assertEqual(try stream.write([9,0,1]), 3)
+        assertEqual(try stream.write(from: [9,0,1]), 3)
         assertEqual(stream.buffered, 2)
 
         assertEqual(testStream.storage, [0,1,2,3,4,5,6,7,8,9])
@@ -99,7 +99,7 @@ class BufferedStreamTests: TestCase {
             return [UInt8](buffer.prefix(upTo: count))
         }
 
-        assertEqual(try stream.write([0,1,2,3,4]), 5)
+        assertEqual(try stream.write(from: [0,1,2,3,4]), 5)
         assertEqual(stream.outputStream.buffered, 5)
 
         assertEqual(read(count: 5), [])

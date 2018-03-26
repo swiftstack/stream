@@ -91,8 +91,8 @@ public final class MemoryStream: Stream, Seekable {
 
     public func read(
         to buffer: UnsafeMutableRawPointer,
-        byteCount: Int
-    ) throws -> Int {
+        byteCount: Int) throws -> Int
+    {
         let bytes = read(byteCount)
         guard bytes.count > 0 else {
             return 0
@@ -101,7 +101,10 @@ public final class MemoryStream: Stream, Seekable {
         return bytes.count
     }
 
-    public func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws -> Int {
+    public func write(
+        from buffer: UnsafeRawPointer,
+        byteCount: Int) throws -> Int
+    {
         guard byteCount > 0 else {
             return 0
         }
@@ -109,7 +112,7 @@ public final class MemoryStream: Stream, Seekable {
         try ensure(capacity: endIndex)
 
         storage.advanced(by: position)
-            .copyMemory(from: bytes, byteCount: byteCount)
+            .copyMemory(from: buffer, byteCount: byteCount)
 
         position = endIndex
         if position > self.endIndex {
@@ -146,7 +149,7 @@ public final class MemoryStream: Stream, Seekable {
 extension MemoryStream {
     public func write<T: BinaryInteger>(_ value: T) throws {
         var value = value
-        _ = try write(UnsafeRawBufferPointer(
+        _ = try write(from: UnsafeRawBufferPointer(
             start: &value, count: MemoryLayout<T>.size))
     }
 

@@ -3,16 +3,25 @@ extension BufferedOutputStream: StreamWriter {
         if available <= 0 {
             try flush()
         }
+        print(available)
+        print(buffered)
         storage.advanced(by: buffered)
             .assumingMemoryBound(to: UInt8.self)
             .pointee = byte
         buffered += 1
     }
 
-    public func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws {
+    public func write<T: BinaryInteger>(_ value: T) throws {
+        var value = value
+        return try withUnsafePointer(to: &value) { pointer in
+            return try write(pointer, byteCount: MemoryLayout<T>.size)
+        }
+    }
+
+    public func write(_ buffer: UnsafeRawPointer, byteCount: Int) throws {
         var written = 0
         while written < byteCount {
-            let count: Int = try write(bytes, byteCount: byteCount)
+            let count: Int = try write(from: buffer, byteCount: byteCount)
             guard count > 0 else {
                 throw StreamError.insufficientData
             }

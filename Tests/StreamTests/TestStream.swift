@@ -10,8 +10,8 @@ class TestStream: Stream {
         return count
     }
 
-    func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws -> Int {
-        let buffer = UnsafeRawBufferPointer(start: bytes, count: byteCount)
+    func write(from buffer: UnsafeRawPointer, byteCount: Int) throws -> Int {
+        let buffer = UnsafeRawBufferPointer(start: buffer, count: byteCount)
         storage.append(contentsOf: buffer)
         return byteCount
     }

@@ -28,9 +28,8 @@ extension InputByteStream: StreamReader {
         try ensure(count: count)
         defer { advance(by: count) }
         var result: T = 0
-        var slice = bytes[position..<position+count]
-        withUnsafeMutableBytes(of: &result) { buffer in
-            withUnsafeBytes(of: &slice) { bytes in
+        bytes[position..<position+count].withUnsafeBytes { bytes in
+            withUnsafeMutableBytes(of: &result) { buffer in
                 buffer.copyMemory(from: bytes)
             }
         }

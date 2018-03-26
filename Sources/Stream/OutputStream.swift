@@ -1,32 +1,28 @@
 public protocol OutputStream {
-    func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws -> Int
+    func write(from buffer: UnsafeRawPointer, byteCount: Int) throws -> Int
 }
 
 extension OutputStream {
     @inline(__always)
-    public func write(_ bytes: UnsafeRawBufferPointer) throws -> Int {
-        return try write(bytes.baseAddress!, byteCount: bytes.count)
+    public func write(from buffer: UnsafeRawBufferPointer) throws -> Int {
+        return try write(from: buffer.baseAddress!, byteCount: buffer.count)
     }
 
     @inline(__always)
-    public func write(_ bytes: ArraySlice<UInt8>) throws -> Int {
-        return try bytes.withUnsafeBytes { buffer in
-            return try write(buffer)
-        }
+    public func write(from buffer: ArraySlice<UInt8>) throws -> Int {
+        return try buffer.withUnsafeBytes(write)
     }
 
     @inline(__always)
-    public func write(_ bytes: [UInt8]) throws -> Int {
-        return try bytes.withUnsafeBytes { buffer in
-            return try write(buffer)
-        }
+    public func write(from buffer: [UInt8]) throws -> Int {
+        return try buffer.withUnsafeBytes(write)
     }
 }
 
 extension OutputStream {
     @_inlineable
     public func copyBytes<T: InputStream>(
-        from input: inout T,
+        from input: T,
         bufferSize: Int = 4096) throws -> Int
     {
         var total = 0
@@ -41,7 +37,7 @@ extension OutputStream {
 
             var index = 0
             while index < read {
-                let written = try write(buffer[index..<read])
+                let written = try write(from: buffer[index..<read])
                 guard written > 0 else {
                     throw StreamError.notEnoughSpace
                 }
