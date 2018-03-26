@@ -6,16 +6,6 @@ public protocol StreamWritable {
     func write(to stream: StreamWriter) throws
 }
 
-public protocol RawBufferInitializable {
-    init(buffer: UnsafeRawBufferPointer) throws
-}
-
-extension String: RawBufferInitializable {
-    public init(buffer: UnsafeRawBufferPointer) {
-        self.init(decoding: buffer, as: UTF8.self)
-    }
-}
-
 extension StreamReader {
     func read<T: StreamReadable>() throws -> T {
         return try T(from: self)
@@ -50,12 +40,6 @@ public protocol StreamReader: class {
         body: (UnsafeRawBufferPointer) throws -> T
     ) throws -> T
 
-    func read<T: RawBufferInitializable>(
-        _ type: T.Type,
-        while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool
-    ) throws -> T
-
     func consume(count: Int) throws
 
     func consume(_ byte: UInt8) throws -> Bool
@@ -64,21 +48,6 @@ public protocol StreamReader: class {
         while predicate: (UInt8) -> Bool,
         allowingExhaustion: Bool
     ) throws
-}
-
-extension StreamReader {
-    public func read<T: RawBufferInitializable>(
-        _ type: T.Type,
-        while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool
-    ) throws -> T {
-        return try read(
-            while: predicate,
-            allowingExhaustion: allowingExhaustion)
-        { bytes in
-            return try T(buffer: bytes)
-        }
-    }
 }
 
 extension StreamReader {

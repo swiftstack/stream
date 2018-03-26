@@ -73,19 +73,6 @@ extension InputByteStream: StreamReader {
         }
     }
 
-    public func read<T: RawBufferInitializable>(
-        _ type: T.Type,
-        while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool) throws -> T
-    {
-        let slice = try _read(
-            while: predicate,
-            allowingExhaustion: allowingExhaustion)
-        return try slice.withUnsafeBytes { bytes in
-            return try T(buffer: bytes)
-        }
-    }
-
     public func consume(count: Int) throws {
         try ensure(count: count)
         position += count
