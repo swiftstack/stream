@@ -1,10 +1,11 @@
-public protocol UnsafeStreamWriter: class {
+public protocol StreamWriter: class {
     var buffered: Int { get }
-    func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws
     func write(_ byte: UInt8) throws
+    func write(_ bytes: [UInt8]) throws
+    func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws
 }
 
-extension UnsafeStreamWriter {
+extension StreamWriter {
     public func write(_ bytes: [UInt8]) throws {
         try write(bytes, byteCount: bytes.count)
     }

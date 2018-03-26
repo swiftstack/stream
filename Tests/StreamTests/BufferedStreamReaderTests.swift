@@ -151,12 +151,12 @@ class BufferedStreamReaderTests: TestCase {
         let stream = TestStream(generateBytesCount: 4)
         let input = BufferedInputStream(baseStream: stream, capacity: 2)
 
-        assertEqual(try input.read(), 1)
-        assertEqual(try input.read(), 1)
-        assertEqual(try input.read(), 2)
-        assertEqual(try input.read(), 2)
+        assertEqual(try input.read(UInt8.self), 1)
+        assertEqual(try input.read(UInt8.self), 1)
+        assertEqual(try input.read(UInt8.self), 2)
+        assertEqual(try input.read(UInt8.self), 2)
 
-        assertThrowsError(try input.read()) { error in
+        assertThrowsError(try input.read(UInt8.self)) { error in
             assertEqual(error as? StreamError, .insufficientData)
         }
     }
@@ -217,31 +217,24 @@ class BufferedStreamReaderTests: TestCase {
     }
 
     func testPeek() {
-        do {
-            let stream = TestStream(generateBytesCount: 10)
-            let input = BufferedInputStream(
-                baseStream: stream, capacity: 10, expandable: false)
-            assertEqual(try input.feed(), 10)
-            assertEqual(input.readPosition, input.storage)
-            assertEqual(input.writePosition, input.storage + 10)
+        let stream = TestStream(generateBytesCount: 10)
+        let input = BufferedInputStream(
+            baseStream: stream, capacity: 10, expandable: false)
+        assertEqual(try input.feed(), 10)
+        assertEqual(input.readPosition, input.storage)
+        assertEqual(input.writePosition, input.storage + 10)
 
-            assertThrowsError(try input.peek(count: 15)) { error in
-                assertEqual(.notEnoughSpace, error as? StreamError)
-            }
-
-            guard let buffer = try input.peek(count: 5) else {
-                fail()
-                return
-            }
-            assertEqual([UInt8](buffer), [UInt8](repeating: 1, count: 5))
-            assertEqual(input.readPosition, input.storage)
-            assertEqual(input.writePosition, input.storage + 10)
-
-            assertNoThrow(try input.read(count: 10))
-            assertNil(try input.peek(count: 5))
-        } catch {
-            fail(String(describing: error))
+        assertThrowsError(try input.cache(count: 15)) { error in
+            assertEqual(.notEnoughSpace, error as? StreamError)
         }
+
+        assertNoThrow(try input.cache(count: 5))
+        assertTrue(try input.next(is: [UInt8](repeating: 1, count: 5)))
+        assertEqual(input.readPosition, input.storage)
+        assertEqual(input.writePosition, input.storage + 10)
+
+        assertNoThrow(try input.read(count: 10))
+        assertFalse(try input.cache(count: 5))
     }
 
     func testConsume() {

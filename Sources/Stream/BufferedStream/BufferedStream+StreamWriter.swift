@@ -1,8 +1,12 @@
-// Convenience conformance
-
-extension OutputByteStream: UnsafeStreamWriter {
-    public var buffered: Int {
-        return bytes.count - position
+extension BufferedOutputStream: StreamWriter {
+    public func write(_ byte: UInt8) throws {
+        if available <= 0 {
+            try flush()
+        }
+        storage.advanced(by: buffered)
+            .assumingMemoryBound(to: UInt8.self)
+            .pointee = byte
+        buffered += 1
     }
 
     public func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws {

@@ -1,20 +1,36 @@
-extension BufferedInputStream: UnsafeStreamReader {}
+extension BufferedInputStream: StreamReader {}
 
 extension BufferedInputStream {
-    @_inlineable
-    public func peek(count: Int) throws -> UnsafeRawBufferPointer? {
+    public func cache(count: Int) throws -> Bool {
         if count > buffered {
             try ensure(count: count)
             guard try feed() > 0 && buffered >= count else {
-                return nil
+                return false
             }
         }
-        return UnsafeRawBufferPointer(start: readPosition, count: count)
+        return true
+    }
+
+    @_inlineable
+    public func next<T>(is elements: T) throws -> Bool
+        where T : Collection, T.Element == UInt8
+    {
+        let count = elements.count
+        if count > buffered {
+            try ensure(count: count)
+            guard try feed() > 0 && buffered >= count else {
+                throw StreamError.insufficientData
+            }
+        }
+
+        let buffer = UnsafeRawBufferPointer(start: readPosition, count: count)
+        return buffer.elementsEqual(elements)
     }
 }
 
 extension BufferedInputStream {
-    public func read() throws -> UInt8 {
+    @_inlineable // optimized
+    public func read(_ type: UInt8.Type) throws -> UInt8 {
         if buffered == 0 {
             guard try feed() > 0 else {
                 throw StreamError.insufficientData
@@ -27,7 +43,17 @@ extension BufferedInputStream {
         return byte
     }
 
-    public func read(count: Int) throws -> UnsafeRawBufferPointer {
+    @_inlineable
+    public func read<T: BinaryInteger>(_ type: T.Type) throws -> T {
+        var result: T = 0
+        try withUnsafeMutableBytes(of: &result) { pointer in
+            pointer.copyMemory(from: try _read(count: MemoryLayout<T>.size))
+        }
+        return result
+    }
+
+    @_versioned
+    func _read(count: Int) throws -> UnsafeRawBufferPointer {
         if count > buffered {
             if count > allocated {
                 try ensure(count: count)
@@ -50,7 +76,20 @@ extension BufferedInputStream {
     }
 
     @_inlineable
-    public func read(
+    public func read(count: Int) throws -> [UInt8] {
+        return [UInt8](try _read(count: count))
+    }
+
+    @_inlineable
+    public func read<T>(
+        count: Int,
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) throws -> T {
+        return try body(try _read(count: count))
+    }
+
+    @_versioned
+    func _read(
         while predicate: (UInt8) -> Bool,
         allowingExhaustion: Bool = true
     ) throws -> UnsafeRawBufferPointer {
@@ -74,6 +113,29 @@ extension BufferedInputStream {
             read += 1
         }
         return UnsafeRawBufferPointer(start: readPosition, count: read)
+    }
+
+    @_inlineable
+    public func read(
+        while predicate: (UInt8) -> Bool,
+        allowingExhaustion: Bool = true
+    ) throws -> [UInt8] {
+        let buffer = try _read(
+            while: predicate,
+            allowingExhaustion: allowingExhaustion)
+        return [UInt8](buffer)
+    }
+
+    @_inlineable
+    public func read<T>(
+        while predicate: (UInt8) -> Bool,
+        allowingExhaustion: Bool,
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+    {
+        let buffer = try _read(
+            while: predicate,
+            allowingExhaustion: allowingExhaustion)
+        return try body(buffer)
     }
 }
 
