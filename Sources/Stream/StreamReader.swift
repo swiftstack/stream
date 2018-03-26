@@ -2,10 +2,6 @@ public protocol StreamReadable {
     init(from stream: StreamReader) throws
 }
 
-public protocol StreamWritable {
-    func write(to stream: StreamWriter) throws
-}
-
 extension StreamReader {
     func read<T: StreamReadable>() throws -> T {
         return try T(from: self)

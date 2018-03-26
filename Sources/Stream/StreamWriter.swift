@@ -10,3 +10,7 @@ extension StreamWriter {
         try write(bytes, byteCount: bytes.count)
     }
 }
+
+public protocol StreamWritable {
+    func write(to stream: StreamWriter) throws
+}
