@@ -48,17 +48,32 @@ public protocol StreamReader: class {
 
 extension StreamReader {
     @inline(__always)
-    public func read(
-        while predicate: (UInt8) -> Bool
-    ) throws -> [UInt8] {
-        return try read(while: predicate, allowingExhaustion: true)
+    public func read<T>(
+        while predicate: (UInt8) -> Bool,
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+    {
+        return try read(
+            while: predicate,
+            allowingExhaustion: true,
+            body: body)
     }
 
     @inline(__always)
-    public func consume(
-        while predicate: (UInt8) -> Bool
-    ) throws {
-        try consume(while: predicate, allowingExhaustion: true)
+    public func read<T>(
+        until byte: UInt8,
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+    {
+        return try read(
+            while: { $0 != byte },
+            allowingExhaustion: false,
+            body: body)
+    }
+}
+
+extension StreamReader {
+    @inline(__always)
+    public func read(while predicate: (UInt8) -> Bool) throws -> [UInt8] {
+        return try read(while: predicate, allowingExhaustion: true)
     }
 
     @inline(__always)
@@ -67,7 +82,26 @@ extension StreamReader {
     }
 
     @inline(__always)
+    public func consume(while predicate: (UInt8) -> Bool) throws {
+        try consume(while: predicate, allowingExhaustion: true)
+    }
+
+    @inline(__always)
     public func consume(until byte: UInt8) throws {
         try consume(while: { $0 != byte }, allowingExhaustion: false)
+    }
+
+    @_inlineable
+    public func consume<T>(sequence bytes: T) throws -> Bool
+        where T: Collection, T.Element == UInt8
+    {
+        guard try cache(count: bytes.count) else {
+            throw StreamError.insufficientData
+        }
+        guard try next(is: bytes) else {
+            return false
+        }
+        try consume(count: bytes.count)
+        return true
     }
 }
