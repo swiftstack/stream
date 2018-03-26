@@ -5,6 +5,10 @@ extension OutputByteStream: StreamWriter {
         return bytes.count - position
     }
 
+    public func write(_ byte: UInt8) throws {
+        bytes.append(byte)
+    }
+
     public func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws {
         var written = 0
         while written < byteCount {
