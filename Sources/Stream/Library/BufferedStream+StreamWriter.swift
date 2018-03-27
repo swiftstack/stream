@@ -3,8 +3,6 @@ extension BufferedOutputStream: StreamWriter {
         if available <= 0 {
             try flush()
         }
-        print(available)
-        print(buffered)
         storage.advanced(by: buffered)
             .assumingMemoryBound(to: UInt8.self)
             .pointee = byte
