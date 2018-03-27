@@ -17,6 +17,19 @@ extension InputByteStream: StreamReader {
         position += count
     }
 
+    public func peek() throws -> UInt8 {
+        try ensure(count: 1)
+        return bytes[position]
+    }
+
+    public func peek<T>(
+        count: Int,
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+    {
+        try ensure(count: count)
+        return try bytes[position..<position+count].withUnsafeBytes(body)
+    }
+
     public func read(_ type: UInt8.Type) throws -> UInt8 {
         try ensure(count: 1)
         defer { advance(by: 1) }
@@ -135,13 +148,5 @@ extension InputByteStream: StreamReader {
         } catch {
             return false
         }
-    }
-
-    public func next<T>(is sequence: T) throws -> Bool
-        where T : Collection, T.Element == UInt8
-    {
-        let count = sequence.count
-        try ensure(count: count)
-        return bytes[position..<position+count].elementsEqual(sequence)
     }
 }

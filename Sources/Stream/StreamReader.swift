@@ -13,8 +13,12 @@ public protocol StreamReader: class {
 
     func cache(count: Int) throws -> Bool
 
-    func next<T: Collection>(is elements: T) throws -> Bool
-        where T.Element == UInt8
+    func peek() throws -> UInt8
+
+    func peek<T>(
+        count: Int,
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) throws -> T
 
     func read<T: BinaryInteger>(_ type: T.Type) throws -> T
 
@@ -44,6 +48,17 @@ public protocol StreamReader: class {
         while predicate: (UInt8) -> Bool,
         allowingExhaustion: Bool
     ) throws
+}
+
+extension StreamReader {
+    @_inlineable
+    public func next<T: Collection>(is elements: T) throws -> Bool
+        where T.Element == UInt8
+    {
+        return try peek(count: elements.count) { bytes in
+            return bytes.elementsEqual(elements)
+        }
+    }
 }
 
 extension StreamReader {

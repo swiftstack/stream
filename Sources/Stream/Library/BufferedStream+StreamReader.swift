@@ -11,20 +11,25 @@ extension BufferedInputStream {
         return true
     }
 
-    @_inlineable
-    public func next<T>(is elements: T) throws -> Bool
-        where T : Collection, T.Element == UInt8
+    public func peek() throws -> UInt8 {
+        guard try cache(count: 1) else {
+            throw StreamError.insufficientData
+        }
+        return readPosition.assumingMemoryBound(to: UInt8.self).pointee
+    }
+
+    public func peek<T>(
+        count: Int,
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
     {
-        let count = elements.count
         if count > buffered {
             try ensure(count: count)
             guard try feed() && buffered >= count else {
                 throw StreamError.insufficientData
             }
         }
-
-        let buffer = UnsafeRawBufferPointer(start: readPosition, count: count)
-        return buffer.elementsEqual(elements)
+        let bytes = UnsafeRawBufferPointer(start: readPosition, count: count)
+        return try body(bytes)
     }
 }
 
