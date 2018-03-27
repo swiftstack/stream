@@ -47,6 +47,11 @@ public class BufferedInputStream<T: InputStream> {
     deinit {
         storage.deallocate()
     }
+
+    public func flush() {
+        readPosition = storage
+        writePosition = storage
+    }
 }
 
 extension BufferedInputStream: InputStream {
@@ -97,14 +102,8 @@ extension BufferedInputStream: InputStream {
         assert(byteCount > buffered)
         buffer.copyMemory(from: readPosition, byteCount: buffered)
         let flushed = buffered
-        reset()
+        flush()
         return flushed
-    }
-
-    @inline(__always)
-    func reset() {
-        readPosition = storage
-        writePosition = storage
     }
 }
 

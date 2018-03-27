@@ -147,7 +147,7 @@ extension BufferedInputStream {
         }
 
         var rest = count - buffered
-        reset()
+        flush()
 
         if rest > allocated && expandable {
             reallocate(byteCount: rest)
