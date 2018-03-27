@@ -222,7 +222,7 @@ class BufferedStreamReaderTests: TestCase {
         let stream = TestStream(generateBytesCount: 10)
         let input = BufferedInputStream(
             baseStream: stream, capacity: 10, expandable: false)
-        assertEqual(try input.feed(), 10)
+        assertTrue(try input.feed())
         assertEqual(input.readPosition, input.storage)
         assertEqual(input.writePosition, input.storage + 10)
 

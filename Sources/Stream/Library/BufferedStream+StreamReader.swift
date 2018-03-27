@@ -4,7 +4,7 @@ extension BufferedInputStream {
     public func cache(count: Int) throws -> Bool {
         if count > buffered {
             try ensure(count: count)
-            guard try feed() > 0 && buffered >= count else {
+            guard try feed() && buffered >= count else {
                 return false
             }
         }
@@ -18,7 +18,7 @@ extension BufferedInputStream {
         let count = elements.count
         if count > buffered {
             try ensure(count: count)
-            guard try feed() > 0 && buffered >= count else {
+            guard try feed() && buffered >= count else {
                 throw StreamError.insufficientData
             }
         }
@@ -32,7 +32,7 @@ extension BufferedInputStream {
     @_inlineable // optimized
     public func read(_ type: UInt8.Type) throws -> UInt8 {
         if buffered == 0 {
-            guard try feed() > 0 else {
+            guard try feed() else {
                 throw StreamError.insufficientData
             }
         }
@@ -61,11 +61,7 @@ extension BufferedInputStream {
                 try ensure(count: count - buffered)
             }
 
-            while buffered < count {
-                if try feed() == 0 {
-                    break
-                }
-            }
+            while buffered < count, try feed() {}
 
             guard count <= buffered else {
                 throw StreamError.insufficientData
@@ -98,7 +94,7 @@ extension BufferedInputStream {
         while true {
             if read == buffered {
                 try ensure(count: 1)
-                guard try feed() > 0 else {
+                guard try feed() else {
                     if allowingExhaustion { break }
                     throw StreamError.insufficientData
                 }
@@ -164,7 +160,7 @@ extension BufferedInputStream {
 
     public func consume(_ byte: UInt8) throws -> Bool {
         if buffered == 0 {
-            guard try feed() > 0 else {
+            guard try feed() else {
                 throw StreamError.insufficientData
             }
         }
@@ -187,7 +183,7 @@ extension BufferedInputStream {
     ) throws {
         while true {
             if buffered == 0 {
-                guard try feed() > 0 else {
+                guard try feed() else {
                     if allowingExhaustion { return }
                     throw StreamError.insufficientData
                 }
@@ -203,15 +199,18 @@ extension BufferedInputStream {
 
 extension BufferedInputStream {
     @_versioned
-    func feed() throws -> Int {
+    func feed() throws -> Bool {
         guard used < allocated else {
             throw StreamError.notEnoughSpace
         }
         let read = try baseStream.read(
             to: writePosition,
             byteCount: allocated - used)
+        guard read > 0 else {
+            return false
+        }
         writePosition += read
-        return read
+        return true
     }
 
     @_versioned
