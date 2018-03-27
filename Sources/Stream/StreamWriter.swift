@@ -10,6 +10,10 @@ extension StreamWriter {
     public func write(_ bytes: [UInt8]) throws {
         try write(bytes, byteCount: bytes.count)
     }
+
+    public func write(_ string: String) throws {
+        try write([UInt8](string.utf8))
+    }
 }
 
 public protocol StreamWritable {
