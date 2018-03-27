@@ -79,16 +79,16 @@ extension BufferedInputStream {
     @_inlineable
     public func read<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) throws -> T {
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+    {
         return try body(try _read(count: count))
     }
 
     @_versioned
     func _read(
         while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool = true
-    ) throws -> UnsafeRawBufferPointer {
+        allowingExhaustion: Bool = true) throws -> UnsafeRawBufferPointer
+    {
         var read = 0
         defer { readPosition += read }
         while true {
@@ -114,8 +114,8 @@ extension BufferedInputStream {
     @_inlineable
     public func read(
         while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool = true
-    ) throws -> [UInt8] {
+        allowingExhaustion: Bool = true) throws -> [UInt8]
+    {
         let buffer = try _read(
             while: predicate,
             allowingExhaustion: allowingExhaustion)
@@ -179,8 +179,8 @@ extension BufferedInputStream {
     @_inlineable
     public func consume(
         while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool = true
-    ) throws {
+        allowingExhaustion: Bool = true) throws
+    {
         while true {
             if buffered == 0 {
                 guard try feed() else {
