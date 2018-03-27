@@ -81,7 +81,7 @@ class BufferedStreamTests: TestCase {
         assertEqual(testStream.storage, [0,1,2,3,4,5,6,7,8,9])
         testStream.storage = []
 
-        assertEqual(try stream.flush(), 2)
+        assertNoThrow(try stream.flush())
         assertEqual(stream.buffered, 0)
 
         assertEqual(testStream.storage, [0,1])
