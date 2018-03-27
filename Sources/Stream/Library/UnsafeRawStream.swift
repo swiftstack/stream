@@ -2,7 +2,7 @@ public class UnsafeRawInputStream: InputStream {
     let pointer: UnsafeRawPointer
     let count: Int
 
-    public private(set) var position: Int
+    public internal(set) var position: Int
 
     public init(pointer: UnsafeRawPointer, count: Int) {
         self.pointer = pointer
