@@ -25,10 +25,9 @@ public protocol StreamReader: class {
         body: (UnsafeRawBufferPointer) throws -> T
     ) throws -> T
 
-
     func read<T>(
-        while predicate: (UInt8) -> Bool,
         untilEnd: Bool,
+        while predicate: (UInt8) -> Bool,
         body: (UnsafeRawBufferPointer) throws -> T
     ) throws -> T
 
@@ -37,79 +36,25 @@ public protocol StreamReader: class {
     func consume(_ byte: UInt8) throws -> Bool
 
     func consume(
-        while predicate: (UInt8) -> Bool,
-        untilEnd: Bool
+        untilEnd: Bool,
+        while predicate: (UInt8) -> Bool
     ) throws
 }
 
 extension StreamReader {
-    @_inlineable
-    public func next<T: Collection>(is elements: T) throws -> Bool
-        where T.Element == UInt8
-    {
-        return try peek(count: elements.count) { bytes in
-            return bytes.elementsEqual(elements)
-        }
-    }
-}
-
-extension StreamReader {
-    @inline(__always)
-    public func read<T>(
-        while predicate: (UInt8) -> Bool,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
-    {
-        return try read(
-            while: predicate,
-            untilEnd: true,
-            body: body)
-    }
-
     @inline(__always)
     public func read<T>(
         until byte: UInt8,
         body: (UnsafeRawBufferPointer) throws -> T) throws -> T
     {
         return try read(
-            while: { $0 != byte },
             untilEnd: false,
+            while: { $0 != byte },
             body: body)
     }
-}
 
-extension StreamReader {
-    public func read(count: Int) throws -> [UInt8] {
-        return try self.read(count: count, body: { [UInt8]($0) })
-    }
-
-    public func read(
-        while predicate: (UInt8) -> Bool,
-        untilEnd: Bool) throws -> [UInt8]
-    {
-        return try self.read(
-            while: predicate,
-            untilEnd: untilEnd,
-            body: { [UInt8]($0) })
-    }
-
-    @inline(__always)
-    public func read(while predicate: (UInt8) -> Bool) throws -> [UInt8] {
-        return try read(while: predicate, untilEnd: true)
-    }
-
-    @inline(__always)
-    public func read(until byte: UInt8) throws -> [UInt8] {
-        return try read(while: { $0 != byte }, untilEnd: false)
-    }
-
-    @inline(__always)
-    public func consume(while predicate: (UInt8) -> Bool) throws {
-        try consume(while: predicate, untilEnd: true)
-    }
-
-    @inline(__always)
     public func consume(until byte: UInt8) throws {
-        try consume(while: { $0 != byte }, untilEnd: false)
+        try consume(untilEnd: false, while: { $0 != byte })
     }
 
     @_inlineable
@@ -124,5 +69,55 @@ extension StreamReader {
         }
         try consume(count: bytes.count)
         return true
+    }
+
+    @_inlineable
+    public func next<T: Collection>(is elements: T) throws -> Bool
+        where T.Element == UInt8
+    {
+        return try peek(count: elements.count) { bytes in
+            return bytes.elementsEqual(elements)
+        }
+    }
+}
+
+// MARK: untilEnd = true by default
+
+extension StreamReader {
+    @inline(__always)
+    public func read<T>(
+        while predicate: (UInt8) -> Bool,
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+    {
+        return try read(untilEnd: true, while: predicate, body: body)
+    }
+
+    @inline(__always)
+    public func consume(while predicate: (UInt8) -> Bool) throws {
+        try consume(untilEnd: true, while: predicate)
+    }
+}
+
+// MARK: [UInt8]
+
+extension StreamReader {
+    public func read(until byte: UInt8) throws -> [UInt8] {
+        return try read(until: byte, body: [UInt8].init)
+    }
+
+    @_inlineable
+    public func read(count: Int) throws -> [UInt8] {
+        return try read(count: count, body: [UInt8].init)
+    }
+
+    @_inlineable
+    public func read(
+        untilEnd: Bool = true,
+        while predicate: (UInt8) -> Bool) throws -> [UInt8]
+    {
+        return try read(
+            untilEnd: untilEnd,
+            while: predicate,
+            body: [UInt8].init)
     }
 }
