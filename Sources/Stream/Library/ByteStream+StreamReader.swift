@@ -63,14 +63,14 @@ extension InputByteStream: StreamReader {
 
     public func read<T>(
         while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool,
+        untilEnd: Bool,
         body: (UnsafeRawBufferPointer) throws -> T) throws -> T
     {
         var read = 0
         defer { advance(by: read) }
         while true {
             if read == buffered {
-                if allowingExhaustion { break }
+                if untilEnd { break }
                 throw StreamError.insufficientData
             }
             if !predicate(bytes[position+read]) {
@@ -100,11 +100,11 @@ extension InputByteStream: StreamReader {
 
     public func consume(
         while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool) throws
+        untilEnd: Bool) throws
     {
         while true {
             if position == bytes.count {
-                if allowingExhaustion { break }
+                if untilEnd { break }
                 throw StreamError.insufficientData
             }
             if !predicate(bytes[position]) {
