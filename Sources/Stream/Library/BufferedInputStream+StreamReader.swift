@@ -1,6 +1,4 @@
-extension BufferedInputStream: StreamReader {}
-
-extension BufferedInputStream {
+extension BufferedInputStream: StreamReader {
     public func cache(count: Int) throws -> Bool {
         if count > buffered {
             try ensure(count: count)
