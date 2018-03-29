@@ -52,13 +52,18 @@ extension BufferedInputStream {
     public func read<T: BinaryInteger>(_ type: T.Type) throws -> T {
         var result: T = 0
         try withUnsafeMutableBytes(of: &result) { pointer in
-            pointer.copyMemory(from: try _read(count: MemoryLayout<T>.size))
+            return try read(count: MemoryLayout<T>.size) { bytes in
+                pointer.copyMemory(from: bytes)
+            }
         }
         return result
     }
 
-    @_versioned
-    func _read(count: Int) throws -> UnsafeRawBufferPointer {
+    @_inlineable
+    public func read<T>(
+        count: Int,
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+    {
         if count > buffered {
             if count > allocated {
                 try ensure(count: count)
@@ -73,26 +78,15 @@ extension BufferedInputStream {
             }
         }
         defer { readPosition += count }
-        return UnsafeRawBufferPointer(start: readPosition, count: count)
-    }
-
-    @_inlineable
-    public func read(count: Int) throws -> [UInt8] {
-        return [UInt8](try _read(count: count))
+        let buffer = UnsafeRawBufferPointer(start: readPosition, count: count)
+        return try body(buffer)
     }
 
     @_inlineable
     public func read<T>(
-        count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
-    {
-        return try body(try _read(count: count))
-    }
-
-    @_versioned
-    func _read(
         while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool = true) throws -> UnsafeRawBufferPointer
+        allowingExhaustion: Bool,
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
     {
         var read = 0
         defer { readPosition += read }
@@ -113,29 +107,8 @@ extension BufferedInputStream {
             }
             read += 1
         }
-        return UnsafeRawBufferPointer(start: readPosition, count: read)
-    }
 
-    @_inlineable
-    public func read(
-        while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool = true) throws -> [UInt8]
-    {
-        let buffer = try _read(
-            while: predicate,
-            allowingExhaustion: allowingExhaustion)
-        return [UInt8](buffer)
-    }
-
-    @_inlineable
-    public func read<T>(
-        while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
-    {
-        let buffer = try _read(
-            while: predicate,
-            allowingExhaustion: allowingExhaustion)
+        let buffer = UnsafeRawBufferPointer(start: readPosition, count: read)
         return try body(buffer)
     }
 }

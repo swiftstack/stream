@@ -20,17 +20,11 @@ public protocol StreamReader: class {
 
     func read<T: BinaryInteger>(_ type: T.Type) throws -> T
 
-    func read(count: Int) throws -> [UInt8]
-
     func read<T>(
         count: Int,
         body: (UnsafeRawBufferPointer) throws -> T
     ) throws -> T
 
-    func read(
-        while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool
-    ) throws -> [UInt8]
 
     func read<T>(
         while predicate: (UInt8) -> Bool,
@@ -84,6 +78,20 @@ extension StreamReader {
 }
 
 extension StreamReader {
+    public func read(count: Int) throws -> [UInt8] {
+        return try self.read(count: count, body: { [UInt8]($0) })
+    }
+
+    public func read(
+        while predicate: (UInt8) -> Bool,
+        untilEnd: Bool) throws -> [UInt8]
+    {
+        return try self.read(
+            while: predicate,
+            untilEnd: untilEnd,
+            body: { [UInt8]($0) })
+    }
+
     @inline(__always)
     public func read(while predicate: (UInt8) -> Bool) throws -> [UInt8] {
         return try read(while: predicate, allowingExhaustion: true)

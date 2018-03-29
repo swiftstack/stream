@@ -55,27 +55,21 @@ extension UnsafeRawInputStream: StreamReader {
         return result
     }
 
-    private func _read(count: Int) throws -> Slice<UnsafeRawBufferPointer> {
-        try ensure(count: count)
-        defer { advance(by: count) }
-        return bytes[position..<position+count]
-    }
-
-    public func read(count: Int) throws -> [UInt8] {
-        return [UInt8](try _read(count: count))
-    }
-
     public func read<T>(
         count: Int,
         body: (UnsafeRawBufferPointer) throws -> T) throws -> T
     {
-        let bytes = UnsafeRawBufferPointer(rebasing: try _read(count: count))
+        try ensure(count: count)
+        defer { advance(by: count) }
+        let slice = self.bytes[position..<position+count]
+        let bytes = UnsafeRawBufferPointer(rebasing: slice)
         return try body(bytes)
     }
 
-    private func _read(
+    public func read<T>(
         while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool) throws -> Slice<UnsafeRawBufferPointer>
+        allowingExhaustion: Bool,
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
     {
         var read = 0
         defer { advance(by: read) }
@@ -89,27 +83,7 @@ extension UnsafeRawInputStream: StreamReader {
             }
             read += 1
         }
-        return bytes[position..<(position+read)]
-    }
-
-    public func read(
-        while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool) throws -> [UInt8]
-    {
-        let slice = try _read(
-            while: predicate,
-            allowingExhaustion: allowingExhaustion)
-        return [UInt8](slice)
-    }
-
-    public func read<T>(
-        while predicate: (UInt8) -> Bool,
-        allowingExhaustion: Bool,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
-    {
-        let slice = try _read(
-            while: predicate,
-            allowingExhaustion: allowingExhaustion)
+        let slice = self.bytes[position..<(position+read)]
         return try body(UnsafeRawBufferPointer(rebasing: slice))
     }
 
