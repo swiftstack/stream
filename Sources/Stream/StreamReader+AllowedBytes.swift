@@ -37,7 +37,7 @@ extension StreamReader {
     {
         let buffer = allowedBytes.buffer
         return try read(
-            untilEnd: true,
+            mode: .untilEnd,
             while: { buffer[Int($0)] },
             body: body)
     }

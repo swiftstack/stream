@@ -82,7 +82,7 @@ extension BufferedInputStream {
 
     @_inlineable
     public func read<T>(
-        untilEnd: Bool,
+        mode: PredicateMode,
         while predicate: (UInt8) -> Bool,
         body: (UnsafeRawBufferPointer) throws -> T) throws -> T
     {
@@ -92,7 +92,7 @@ extension BufferedInputStream {
             if read == buffered {
                 try ensure(count: 1)
                 guard try feed() else {
-                    if untilEnd { break }
+                    if mode == .untilEnd { break }
                     throw StreamError.insufficientData
                 }
             }
@@ -154,13 +154,13 @@ extension BufferedInputStream {
 
     @_inlineable
     public func consume(
-        untilEnd: Bool = true,
+        mode: PredicateMode,
         while predicate: (UInt8) -> Bool) throws
     {
         while true {
             if buffered == 0 {
                 guard try feed() else {
-                    if untilEnd { return }
+                    if mode == .untilEnd { return }
                     throw StreamError.insufficientData
                 }
             }

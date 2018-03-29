@@ -59,14 +59,11 @@ extension BufferedStream: StreamReader {
     }
 
     public func read<T>(
-        untilEnd: Bool,
+        mode: PredicateMode,
         while predicate: (UInt8) -> Bool,
         body: (UnsafeRawBufferPointer) throws -> T) throws -> T
     {
-        return try inputStream.read(
-            untilEnd: untilEnd,
-            while: predicate,
-            body: body)
+        return try inputStream.read(mode: mode, while: predicate, body: body)
     }
 
     public func consume(count: Int) throws {
@@ -77,9 +74,9 @@ extension BufferedStream: StreamReader {
         return try inputStream.consume(byte)
     }
 
-    public func consume(untilEnd: Bool, while predicate: (UInt8) -> Bool) throws
+    public func consume(mode: PredicateMode, while predicate: (UInt8) -> Bool) throws
     {
-        try inputStream.consume(untilEnd: untilEnd, while: predicate)
+        try inputStream.consume(mode: mode, while: predicate)
     }
 }
 

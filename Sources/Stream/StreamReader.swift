@@ -8,6 +8,11 @@ extension StreamReader {
     }
 }
 
+public enum PredicateMode {
+    case strict
+    case untilEnd
+}
+
 public protocol StreamReader: class {
     func cache(count: Int) throws -> Bool
 
@@ -26,7 +31,7 @@ public protocol StreamReader: class {
     ) throws -> T
 
     func read<T>(
-        untilEnd: Bool,
+        mode: PredicateMode,
         while predicate: (UInt8) -> Bool,
         body: (UnsafeRawBufferPointer) throws -> T
     ) throws -> T
@@ -36,7 +41,7 @@ public protocol StreamReader: class {
     func consume(_ byte: UInt8) throws -> Bool
 
     func consume(
-        untilEnd: Bool,
+        mode: PredicateMode,
         while predicate: (UInt8) -> Bool
     ) throws
 }
@@ -48,13 +53,13 @@ extension StreamReader {
         body: (UnsafeRawBufferPointer) throws -> T) throws -> T
     {
         return try read(
-            untilEnd: false,
+            mode: .strict,
             while: { $0 != byte },
             body: body)
     }
 
     public func consume(until byte: UInt8) throws {
-        try consume(untilEnd: false, while: { $0 != byte })
+        try consume(mode: .strict, while: { $0 != byte })
     }
 
     @_inlineable
@@ -89,12 +94,12 @@ extension StreamReader {
         while predicate: (UInt8) -> Bool,
         body: (UnsafeRawBufferPointer) throws -> T) throws -> T
     {
-        return try read(untilEnd: true, while: predicate, body: body)
+        return try read(mode: .untilEnd, while: predicate, body: body)
     }
 
     @inline(__always)
     public func consume(while predicate: (UInt8) -> Bool) throws {
-        try consume(untilEnd: true, while: predicate)
+        try consume(mode: .untilEnd, while: predicate)
     }
 }
 
@@ -112,12 +117,9 @@ extension StreamReader {
 
     @_inlineable
     public func read(
-        untilEnd: Bool = true,
+        mode: PredicateMode = .untilEnd,
         while predicate: (UInt8) -> Bool) throws -> [UInt8]
     {
-        return try read(
-            untilEnd: untilEnd,
-            while: predicate,
-            body: [UInt8].init)
+        return try read(mode: mode, while: predicate, body: [UInt8].init)
     }
 }
