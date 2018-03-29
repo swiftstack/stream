@@ -1,13 +1,3 @@
-public protocol StreamReadable {
-    init(from stream: StreamReader) throws
-}
-
-extension StreamReader {
-    func read<T: StreamReadable>() throws -> T {
-        return try T(from: self)
-    }
-}
-
 public enum PredicateMode {
     case strict
     case untilEnd
