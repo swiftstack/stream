@@ -7,8 +7,9 @@ public class BufferedInputStream<T: InputStream> {
 
     var expandable: Bool
 
-    public internal(set) var writePosition: UnsafeMutableRawPointer
-    public internal(set) var readPosition: UnsafeMutableRawPointer {
+    // FIXME: internal(set) + mutating from @_inlineable = crash
+    public public(set) var writePosition: UnsafeMutableRawPointer
+    public public(set) var readPosition: UnsafeMutableRawPointer {
         @inline(__always) didSet {
             if readPosition == writePosition {
                 readPosition = storage
