@@ -55,13 +55,6 @@ public class BufferedInputStream<T: InputStream> {
 }
 
 extension BufferedInputStream: InputStream {
-    @inline(__always)
-    private func read(_ count: Int) -> UnsafeMutableRawPointer {
-        let pointer = readPosition
-        readPosition += count
-        return pointer
-    }
-
     public func read(
         to buffer: UnsafeMutableRawPointer, byteCount: Int
     ) throws -> Int {
@@ -96,9 +89,17 @@ extension BufferedInputStream: InputStream {
     }
 
     @inline(__always)
+    private func read(_ count: Int) -> UnsafeMutableRawPointer {
+        let pointer = readPosition
+        readPosition += count
+        return pointer
+    }
+
+    @inline(__always)
     private func flush(
-        to buffer: UnsafeMutableRawPointer, byteCount: Int
-    ) -> Int {
+        to buffer: UnsafeMutableRawPointer,
+        byteCount: Int) -> Int
+    {
         assert(byteCount > buffered)
         buffer.copyMemory(from: readPosition, byteCount: buffered)
         let flushed = buffered
@@ -215,5 +216,75 @@ public class BufferedStream<T: Stream>: Stream {
     @inline(__always)
     public func flush() throws {
         try outputStream.flush()
+    }
+}
+
+extension BufferedStream: StreamReader {
+    public func cache(count: Int) throws -> Bool {
+        return try inputStream.cache(count: count)
+    }
+
+    public func peek() throws -> UInt8 {
+        return try inputStream.peek()
+    }
+
+    public func peek<T>(
+        count: Int,
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+    {
+        return try inputStream.peek(count: count, body: body)
+    }
+
+    public func read<T: BinaryInteger>(_ type: T.Type) throws -> T {
+        return try inputStream.read(type)
+    }
+
+    public func read<T>(
+        count: Int,
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+    {
+        return try inputStream.read(count: count, body: body)
+    }
+
+    public func read<T>(
+        while predicate: (UInt8) -> Bool,
+        untilEnd: Bool,
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+    {
+        return try inputStream.read(
+            while: predicate,
+            untilEnd: untilEnd,
+            body: body)
+    }
+
+    public func consume(count: Int) throws {
+        return try inputStream.consume(count: count)
+    }
+
+    public func consume(_ byte: UInt8) throws -> Bool {
+        return try inputStream.consume(byte)
+    }
+
+    public func consume(
+        while predicate: (UInt8) -> Bool,
+        untilEnd: Bool) throws
+    {
+        try inputStream.consume(
+            while: predicate,
+            untilEnd: untilEnd)
+    }
+}
+
+extension BufferedStream: StreamWriter {
+    public func write(_ byte: UInt8) throws {
+        try outputStream.write(byte)
+    }
+
+    public func write<T: BinaryInteger>(_ value: T) throws {
+        try outputStream.write(value)
+    }
+
+    public func write(_ bytes: UnsafeRawPointer, byteCount: Int) throws {
+        try outputStream.write(bytes, byteCount: byteCount)
     }
 }
