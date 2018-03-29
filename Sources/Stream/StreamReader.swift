@@ -123,3 +123,49 @@ extension StreamReader {
         return try read(mode: mode, while: predicate, body: [UInt8].init)
     }
 }
+
+// MARK: read line
+
+extension UInt8 {
+    @_versioned static let cr = UInt8(ascii: "\r")
+    @_versioned static let lf = UInt8(ascii: "\n")
+}
+
+extension StreamReader {
+    @_versioned
+    func consumeLineEnd() throws {
+        _ = try consume(.cr)
+        _ = try consume(.lf)
+    }
+
+    @_inlineable
+    public func readLine<T>(body: (UnsafeRawBufferPointer) throws -> T) -> T? {
+        do {
+            let result: T = try read(
+                mode: .strict,
+                while: { $0 != .cr && $0 != .lf },
+                body: body)
+
+            try consumeLineEnd()
+            return result
+        } catch {
+            return nil
+        }
+    }
+
+    @_inlineable
+    public func readLine() throws -> String? {
+        return try readLine(as: UTF8.self)
+    }
+
+    @_inlineable
+    public func readLine<T>(as encoding: T.Type) throws -> String?
+        where T: Unicode.Encoding
+    {
+        return readLine { bytes in
+            guard bytes.count > 0 else { return "" }
+            let codeUnits = bytes.bindMemory(to: T.CodeUnit.self)
+            return String(decoding: codeUnits, as: encoding)
+        }
+    }
+}
