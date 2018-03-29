@@ -15,7 +15,7 @@ class ByteStreamTests: TestCase {
     }
 
     func testNumeric() {
-        do {
+        scope {
             let outputStream  = OutputByteStream()
 
             try outputStream.write(Int(-1))
@@ -41,21 +41,17 @@ class ByteStreamTests: TestCase {
             assertEqual(try inputStream.read(UInt16.self), 3)
             assertEqual(try inputStream.read(UInt32.self), 4)
             assertEqual(try inputStream.read(UInt64.self), 5)
-        } catch {
-            fail(String(describing: error))
         }
     }
 
     func testCopyBytes() {
-        do {
+        scope {
             let input = InputByteStream([0,1,2,3,4,5,6,7,8,9])
             let output = OutputByteStream()
 
             let copied = try output.copyBytes(from: input, bufferSize: 3)
             assertEqual(copied, 10)
             assertEqual(output.bytes, [0,1,2,3,4,5,6,7,8,9])
-        } catch {
-            fail(String(describing: error))
         }
     }
 

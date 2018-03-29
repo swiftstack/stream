@@ -4,12 +4,14 @@ import Test
 class BufferedStreamTests: TestCase {
     class TestInputStreamSequence: InputStream {
         func read(
-            to buffer: UnsafeMutableRawPointer, byteCount: Int
+            to buffer: UnsafeMutableRawPointer,
+            byteCount: Int
         ) throws -> Int {
+            let buffer = UnsafeMutableRawBufferPointer(
+                start: buffer,
+                count: byteCount)
             for i in 0..<byteCount {
-                buffer.advanced(by: i)
-                    .assumingMemoryBound(to: UInt8.self)
-                    .pointee = UInt8(truncatingIfNeeded: i)
+                buffer[i] = UInt8(truncatingIfNeeded: i)
             }
             return byteCount
         }

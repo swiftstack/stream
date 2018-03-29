@@ -25,7 +25,7 @@ class StreamTests: TestCase {
     }
 
     func testCopyBytes() {
-        do {
+        scope {
             let input = TestStream()
             let output = TestStream()
 
@@ -33,8 +33,6 @@ class StreamTests: TestCase {
             let copied = try output.copyBytes(from: input, bufferSize: 3)
             assertEqual(copied, 10)
             assertEqual(output.storage, [0,1,2,3,4,5,6,7,8,9])
-        } catch {
-            fail(String(describing: error))
         }
     }
 }
