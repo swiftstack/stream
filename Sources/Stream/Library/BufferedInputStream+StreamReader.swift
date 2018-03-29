@@ -75,8 +75,8 @@ extension BufferedInputStream {
                 throw StreamError.insufficientData
             }
         }
-        defer { readPosition += count }
         let buffer = UnsafeRawBufferPointer(start: readPosition, count: count)
+        readPosition += count
         return try body(buffer)
     }
 
@@ -87,7 +87,6 @@ extension BufferedInputStream {
         body: (UnsafeRawBufferPointer) throws -> T) throws -> T
     {
         var read = 0
-        defer { readPosition += read }
         while true {
             if read == buffered {
                 try ensure(count: 1)
@@ -107,6 +106,7 @@ extension BufferedInputStream {
         }
 
         let buffer = UnsafeRawBufferPointer(start: readPosition, count: read)
+        readPosition += read
         return try body(buffer)
     }
 }

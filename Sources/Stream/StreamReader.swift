@@ -58,6 +58,16 @@ extension StreamReader {
             body: body)
     }
 
+    @inline(__always)
+    public func readUntilEnd<T>(
+        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+    {
+        return try read(
+            mode: .untilEnd,
+            while: { _ in true },
+            body: body)
+    }
+
     public func consume(until byte: UInt8) throws {
         try consume(mode: .strict, while: { $0 != byte })
     }

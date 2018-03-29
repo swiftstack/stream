@@ -32,20 +32,20 @@ extension InputByteStream: StreamReader {
 
     public func read(_ type: UInt8.Type) throws -> UInt8 {
         try ensure(count: 1)
-        defer { advance(by: 1) }
-        return bytes[position]
+        advance(by: 1)
+        return bytes[position-1]
     }
 
     public func read<T: BinaryInteger>(_ type: T.Type) throws -> T {
         let count = MemoryLayout<T>.size
         try ensure(count: count)
-        defer { advance(by: count) }
         var result: T = 0
         bytes[position..<position+count].withUnsafeBytes { bytes in
             withUnsafeMutableBytes(of: &result) { buffer in
                 buffer.copyMemory(from: bytes)
             }
         }
+        advance(by: count)
         return result
     }
 
@@ -54,8 +54,8 @@ extension InputByteStream: StreamReader {
         body: (UnsafeRawBufferPointer) throws -> T) throws -> T
     {
         try ensure(count: count)
-        defer { advance(by: count) }
         let slice = bytes[position..<position+count]
+        advance(by: count)
         return try slice.withUnsafeBytes { bytes in
             return try body(bytes)
         }
@@ -67,7 +67,6 @@ extension InputByteStream: StreamReader {
         body: (UnsafeRawBufferPointer) throws -> T) throws -> T
     {
         var read = 0
-        defer { advance(by: read) }
         while true {
             if read == buffered {
                 if mode == .untilEnd { break }
@@ -79,6 +78,7 @@ extension InputByteStream: StreamReader {
             read += 1
         }
         let slice = bytes[position..<(position+read)]
+        advance(by: read)
         return try slice.withUnsafeBytes { bytes in
             return try body(bytes)
         }

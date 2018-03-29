@@ -188,7 +188,8 @@ class BufferedStreamReaderTests: TestCase {
         { error in
             assertEqual(error as? StreamError, .insufficientData)
         }
-        assertEqual(input.buffered, 0)
+        // NOTE: changed to not consume bytes if failed
+        assertEqual(input.buffered, 5)
         assertNoThrow(try input.read(mode: .untilEnd, while: { $0 == 1 }))
     }
 
@@ -380,6 +381,16 @@ class BufferedStreamReaderTests: TestCase {
             assertEqual([UInt8](buffer), [UInt8](repeating: 1, count: 20))
         } catch {
             fail(String(describing: error))
+        }
+    }
+
+    func testAdvancePositionBeforeCallback() {
+        scope {
+            let input = BufferedInputStream(
+                baseStream: InputByteStream([0,1,2,3,4,5,6,7,8,9]))
+            try input.readUntilEnd { bytes in
+                assertEqual(input.readPosition, input.writePosition)
+            }
         }
     }
 }

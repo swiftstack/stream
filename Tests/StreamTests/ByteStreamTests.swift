@@ -58,4 +58,13 @@ class ByteStreamTests: TestCase {
             fail(String(describing: error))
         }
     }
+
+    func testAdvancePositionBeforeCallback() {
+        scope {
+            let input = InputByteStream([0,1,2,3,4,5,6,7,8,9])
+            try input.readUntilEnd { bytes in
+                assertEqual(input.position, input.bytes.count)
+            }
+        }
+    }
 }
