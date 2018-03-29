@@ -9,8 +9,6 @@ extension StreamReader {
 }
 
 public protocol StreamReader: class {
-    var buffered: Int { get }
-
     func cache(count: Int) throws -> Bool
 
     func peek() throws -> UInt8
