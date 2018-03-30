@@ -57,8 +57,9 @@ public class BufferedInputStream<T: InputStream> {
 
 extension BufferedInputStream: InputStream {
     public func read(
-        to buffer: UnsafeMutableRawPointer, byteCount: Int
-        ) throws -> Int {
+        to buffer: UnsafeMutableRawPointer,
+        byteCount: Int) throws -> Int
+    {
         switch buffered - byteCount {
 
         // we have buffered more than requested
@@ -69,11 +70,11 @@ extension BufferedInputStream: InputStream {
         // we don't have enough data and can buffer the rest after read
         case -(allocated-1)..<0:
             let flushed = flush(to: buffer, byteCount: byteCount)
-            let bytesRead = try baseStream.read(to: storage, byteCount: allocated)
-            writePosition = self.storage + bytesRead
+            let read = try baseStream.read(to: storage, byteCount: allocated)
+            writePosition = self.storage + read
             let remain = min(buffered, byteCount - flushed)
             buffer.advanced(by: flushed)
-                .copyMemory(from: read(remain), byteCount: remain)
+                .copyMemory(from: self.read(remain), byteCount: remain)
             return flushed + remain
 
         // requested more than we can buffer, read directly into the buffer
