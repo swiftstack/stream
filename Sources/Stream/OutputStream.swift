@@ -20,7 +20,7 @@ extension OutputStream {
 }
 
 extension OutputStream {
-    @_inlineable
+    @inlinable
     public func copyBytes<T: InputStream>(
         from input: T,
         bufferSize: Int = 4096) throws -> Int

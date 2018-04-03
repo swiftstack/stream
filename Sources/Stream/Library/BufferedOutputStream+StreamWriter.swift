@@ -9,7 +9,7 @@ extension BufferedOutputStream: StreamWriter {
         buffered += 1
     }
 
-    @_inlineable
+    @inlinable
     public func write<T: BinaryInteger>(_ value: T) throws {
         var value = value
         return try withUnsafePointer(to: &value) { pointer in

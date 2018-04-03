@@ -62,7 +62,7 @@ extension StreamReader {
         try consume(mode: .strict, while: { $0 != byte })
     }
 
-    @_inlineable
+    @inlinable
     public func consume<T>(sequence bytes: T) throws -> Bool
         where T: Collection, T.Element == UInt8
     {
@@ -76,7 +76,7 @@ extension StreamReader {
         return true
     }
 
-    @_inlineable
+    @inlinable
     public func next<T: Collection>(is elements: T) throws -> Bool
         where T.Element == UInt8
     {
@@ -110,12 +110,12 @@ extension StreamReader {
         return try read(until: byte, body: [UInt8].init)
     }
 
-    @_inlineable
+    @inlinable
     public func read(count: Int) throws -> [UInt8] {
         return try read(count: count, body: [UInt8].init)
     }
 
-    @_inlineable
+    @inlinable
     public func read(
         mode: PredicateMode = .untilEnd,
         while predicate: (UInt8) -> Bool) throws -> [UInt8]
@@ -127,18 +127,18 @@ extension StreamReader {
 // MARK: read line
 
 extension UInt8 {
-    @_versioned static let cr = UInt8(ascii: "\r")
-    @_versioned static let lf = UInt8(ascii: "\n")
+    @usableFromInline static let cr = UInt8(ascii: "\r")
+    @usableFromInline static let lf = UInt8(ascii: "\n")
 }
 
 extension StreamReader {
-    @_versioned
+    @usableFromInline
     func consumeLineEnd() throws {
         _ = try consume(.cr)
         _ = try consume(.lf)
     }
 
-    @_inlineable
+    @inlinable
     public func readLine<T>(body: (UnsafeRawBufferPointer) throws -> T) -> T? {
         do {
             let result: T = try read(
@@ -153,12 +153,12 @@ extension StreamReader {
         }
     }
 
-    @_inlineable
+    @inlinable
     public func readLine() throws -> String? {
         return try readLine(as: UTF8.self)
     }
 
-    @_inlineable
+    @inlinable
     public func readLine<T>(as encoding: T.Type) throws -> String?
         where T: Unicode.Encoding
     {

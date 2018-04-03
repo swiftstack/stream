@@ -1,5 +1,5 @@
 public final class AllowedBytes {
-    @_versioned
+    @usableFromInline
     let buffer: UnsafeBufferPointer<Bool>
 
     public init(byteSet set: Set<UInt8>) {

@@ -1,13 +1,13 @@
 public class BufferedInputStream<T: InputStream> {
     public let baseStream: T
 
-    @_versioned
+    @usableFromInline
     var storage: UnsafeMutableRawPointer
     public internal(set) var allocated: Int
 
     var expandable: Bool
 
-    // FIXME: internal(set) + mutating from @_inlineable = crash
+    // FIXME: internal(set) + mutating from @inlinable = crash
     public public(set) var writePosition: UnsafeMutableRawPointer
     public public(set) var readPosition: UnsafeMutableRawPointer {
         @inline(__always) didSet {
