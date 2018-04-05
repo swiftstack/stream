@@ -3,6 +3,10 @@ public class InputByteStream: InputStream {
 
     public internal(set) var position = 0
 
+    public var isEmpty: Bool {
+        return position == bytes.count
+    }
+
     public init(_ bytes: [UInt8]) {
         self.bytes = bytes
     }

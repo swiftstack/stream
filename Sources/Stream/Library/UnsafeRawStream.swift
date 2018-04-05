@@ -4,6 +4,10 @@ public class UnsafeRawInputStream: InputStream {
 
     public internal(set) var position: Int
 
+    public var isEmpty: Bool {
+        return position == count
+    }
+
     public init(pointer: UnsafeRawPointer, count: Int) {
         self.pointer = pointer
         self.count = count
