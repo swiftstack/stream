@@ -13,7 +13,7 @@ public protocol StreamReader: class {
         body: (UnsafeRawBufferPointer) throws -> T
     ) throws -> T
 
-    func read<T: BinaryInteger>(_ type: T.Type) throws -> T
+    func read<T: FixedWidthInteger>(_ type: T.Type) throws -> T
 
     func read<T>(
         count: Int,

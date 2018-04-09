@@ -209,7 +209,7 @@ class MemoryStreamTests: TestCase {
         try? stream.seek(to: 0, from: .begin)
         let read = try? stream.read(to: &buffer, byteCount: 8)
         assertEqual(read, 8)
-        assertEqual(buffer, [8, 7, 6, 5, 4, 3, 2, 1])
+        assertEqual(buffer, [1, 2, 3, 4, 5, 6, 7, 8])
 
         try? stream.seek(to: 0, from: .begin)
         assertNoThrow(try stream.write(Int.max))

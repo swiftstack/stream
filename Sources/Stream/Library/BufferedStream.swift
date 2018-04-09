@@ -47,7 +47,7 @@ extension BufferedStream: StreamReader {
         return try inputStream.peek(count: count, body: body)
     }
 
-    public func read<T: BinaryInteger>(_ type: T.Type) throws -> T {
+    public func read<T: FixedWidthInteger>(_ type: T.Type) throws -> T {
         return try inputStream.read(type)
     }
 
@@ -85,7 +85,7 @@ extension BufferedStream: StreamWriter {
         try outputStream.write(byte)
     }
 
-    public func write<T: BinaryInteger>(_ value: T) throws {
+    public func write<T: FixedWidthInteger>(_ value: T) throws {
         try outputStream.write(value)
     }
 

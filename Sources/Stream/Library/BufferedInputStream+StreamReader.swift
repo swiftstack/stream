@@ -47,14 +47,14 @@ extension BufferedInputStream {
     }
 
     @inlinable
-    public func read<T: BinaryInteger>(_ type: T.Type) throws -> T {
+    public func read<T: FixedWidthInteger>(_ type: T.Type) throws -> T {
         var result: T = 0
         try withUnsafeMutableBytes(of: &result) { pointer in
             return try read(count: MemoryLayout<T>.size) { bytes in
                 pointer.copyMemory(from: bytes)
             }
         }
-        return result
+        return result.bigEndian
     }
 
     @inlinable

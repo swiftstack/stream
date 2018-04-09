@@ -43,7 +43,7 @@ extension UnsafeRawInputStream: StreamReader {
         return bytes[position-1]
     }
 
-    public func read<T: BinaryInteger>(_ type: T.Type) throws -> T {
+    public func read<T: FixedWidthInteger>(_ type: T.Type) throws -> T {
         let count = MemoryLayout<T>.size
         try ensure(count: count)
         var result: T = 0
@@ -52,7 +52,7 @@ extension UnsafeRawInputStream: StreamReader {
         withUnsafeMutableBytes(of: &result) { buffer in
             buffer.copyMemory(from: UnsafeRawBufferPointer(rebasing: slice))
         }
-        return result
+        return result.bigEndian
     }
 
     public func read<T>(

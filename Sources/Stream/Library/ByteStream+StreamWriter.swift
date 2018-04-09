@@ -9,8 +9,8 @@ extension OutputByteStream: StreamWriter {
         bytes.append(byte)
     }
 
-    public func write<T: BinaryInteger>(_ value: T) throws {
-        var value = value
+    public func write<T: FixedWidthInteger>(_ value: T) throws {
+        var value = value.bigEndian
         withUnsafeBytes(of: &value) { buffer in
             bytes.append(contentsOf: buffer)
         }

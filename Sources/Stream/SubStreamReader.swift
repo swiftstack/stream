@@ -14,7 +14,7 @@ extension StreamReader {
         sizedBy type: H.Type,
         body: (SubStreamReader) throws -> T) throws -> T
     {
-        let length = try read(type).bigEndian
+        let length = try read(type)
         return try withSubStream(limitedBy: Int(length), body: body)
     }
 

@@ -147,14 +147,15 @@ public final class MemoryStream: Stream, Seekable {
 }
 
 extension MemoryStream {
-    public func write<T: BinaryInteger>(_ value: T) throws {
-        var value = value
+    public func write<T: FixedWidthInteger>(_ value: T) throws {
+        var value = value.bigEndian
         _ = try write(from: UnsafeRawBufferPointer(
             start: &value, count: MemoryLayout<T>.size))
     }
 
-    public func read<T: BinaryInteger>(_ type: T.Type) throws -> T {
+    public func read<T: FixedWidthInteger>(_ type: T.Type) throws -> T {
         let buffer = try read(upTo: MemoryLayout<T>.size)
-        return buffer.baseAddress!.assumingMemoryBound(to: T.self).pointee
+        let value = buffer.baseAddress!.assumingMemoryBound(to: T.self).pointee
+        return value.bigEndian
     }
 }

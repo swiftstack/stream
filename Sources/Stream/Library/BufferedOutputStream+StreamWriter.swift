@@ -10,8 +10,8 @@ extension BufferedOutputStream: StreamWriter {
     }
 
     @inlinable
-    public func write<T: BinaryInteger>(_ value: T) throws {
-        var value = value
+    public func write<T: FixedWidthInteger>(_ value: T) throws {
+        var value = value.bigEndian
         return try withUnsafePointer(to: &value) { pointer in
             return try write(pointer, byteCount: MemoryLayout<T>.size)
         }
