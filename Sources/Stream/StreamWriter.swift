@@ -7,6 +7,10 @@ public protocol StreamWriter: class {
 }
 
 extension StreamWriter {
+    public func write(_ bytes: UnsafeRawBufferPointer) throws {
+        try write(bytes.baseAddress!, byteCount: bytes.count)
+    }
+
     public func write(_ bytes: [UInt8]) throws {
         try write(bytes, byteCount: bytes.count)
     }
