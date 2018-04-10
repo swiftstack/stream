@@ -15,7 +15,6 @@ extension StreamWriter {
     {
         let output = OutputByteStream()
         try task(output)
-        print(output.bytes.count)
         try write(T(output.bytes.count))
         try write(output.bytes)
     }
