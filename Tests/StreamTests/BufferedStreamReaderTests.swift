@@ -375,4 +375,13 @@ class BufferedStreamReaderTests: TestCase {
             }
         }
     }
+
+    func testReadLine() {
+        scope {
+            let stream = BufferedInputStream(
+                baseStream: InputByteStream([UInt8]("line1\r\nline2\n".utf8)))
+            assertEqual(try stream.readLine(), "line1")
+            assertEqual(try stream.readLine(), "line2")
+        }
+    }
 }

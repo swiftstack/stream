@@ -134,7 +134,7 @@ extension UInt8 {
 extension StreamReader {
     @usableFromInline
     func consumeLineEnd() throws {
-        _ = try consume(.cr)
+        _ = try? consume(.cr)
         _ = try consume(.lf)
     }
 
