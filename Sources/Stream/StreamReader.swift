@@ -126,11 +126,6 @@ extension StreamReader {
 
 // MARK: read line
 
-extension UInt8 {
-    @usableFromInline static let cr = UInt8(ascii: "\r")
-    @usableFromInline static let lf = UInt8(ascii: "\n")
-}
-
 extension StreamReader {
     @usableFromInline
     func consumeLineEnd() throws {
