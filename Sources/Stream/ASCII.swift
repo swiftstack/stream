@@ -1,7 +1,10 @@
 public extension UInt8 {
     static let whitespace = UInt8(ascii: " ")
+    static let doubleQuote = UInt8(ascii: "\"")
+    static let backslash = UInt8(ascii: "\\")
     static let cr = UInt8(ascii: "\r")
     static let lf = UInt8(ascii: "\n")
+    static let tab = UInt8(ascii: "\t")
     static let dot = UInt8(ascii: ".")
     static let comma = UInt8(ascii: ",")
     static let colon = UInt8(ascii: ":")
@@ -10,9 +13,17 @@ public extension UInt8 {
     static let ampersand = UInt8(ascii: "&")
     static let asterisk = UInt8(ascii: "*")
     static let percent = UInt8(ascii: "%")
+    static let hyphen = UInt8(ascii: "-")
     static let equal = UInt8(ascii: "=")
     static let slash = UInt8(ascii: "/")
     static let hash = UInt8(ascii: "#")
+
+    static let squareBracketOpen = UInt8(ascii: "[")
+    static let squareBracketClose = UInt8(ascii: "]")
+    static let curlyBracketOpen = UInt8(ascii: "{")
+    static let curlyBracketClose = UInt8(ascii: "}")
+    static let angleBracketOpen = UInt8(ascii: "<")
+    static let angleBracketClose = UInt8(ascii: ">")
 
     static let zero = UInt8(ascii: "0")
     static let one = UInt8(ascii: "1")
