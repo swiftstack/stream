@@ -1,6 +1,7 @@
 public extension UInt8 {
     static let whitespace = UInt8(ascii: " ")
     static let quote = UInt8(ascii: "'")
+    static let backtick = UInt8(ascii: "`")
     static let doubleQuote = UInt8(ascii: "\"")
     static let backslash = UInt8(ascii: "\\")
     static let cr = UInt8(ascii: "\r")
@@ -10,6 +11,7 @@ public extension UInt8 {
     static let comma = UInt8(ascii: ",")
     static let colon = UInt8(ascii: ":")
     static let semicolon = UInt8(ascii: ";")
+    static let exclamationMark = UInt8(ascii: "!")
     static let questionMark = UInt8(ascii: "?")
     static let ampersand = UInt8(ascii: "&")
     static let asterisk = UInt8(ascii: "*")
@@ -19,6 +21,8 @@ public extension UInt8 {
     static let slash = UInt8(ascii: "/")
     static let hash = UInt8(ascii: "#")
 
+    static let bracketOpen = UInt8(ascii: "(")
+    static let bracketClose = UInt8(ascii: ")")
     static let squareBracketOpen = UInt8(ascii: "[")
     static let squareBracketClose = UInt8(ascii: "]")
     static let curlyBracketOpen = UInt8(ascii: "{")
