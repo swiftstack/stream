@@ -32,17 +32,16 @@ extension BufferedInputStream: StreamReader {
 }
 
 extension BufferedInputStream {
-    @inlinable // optimized
+    // optimized version of read<T: FixedWidthInteger>()
+    @inlinable // TODO: benchmark @inlinable
     public func read(_ type: UInt8.Type) throws -> UInt8 {
         if buffered == 0 {
             guard try feed() else {
                 throw StreamError.insufficientData
             }
         }
-        let byte = readPosition
-            .assumingMemoryBound(to: UInt8.self)
-            .pointee
-        readPosition += 1
+        let byte = readPosition.assumingMemoryBound(to: UInt8.self).pointee
+        advanceReadPosition(by: 1)
         return byte
     }
 
@@ -76,7 +75,7 @@ extension BufferedInputStream {
             }
         }
         let buffer = UnsafeRawBufferPointer(start: readPosition, count: count)
-        readPosition += count
+        advanceReadPosition(by: count)
         return try body(buffer)
     }
 
@@ -106,7 +105,7 @@ extension BufferedInputStream {
         }
 
         let buffer = UnsafeRawBufferPointer(start: readPosition, count: read)
-        readPosition += read
+        advanceReadPosition(by: read)
         return try body(buffer)
     }
 }
@@ -114,7 +113,7 @@ extension BufferedInputStream {
 extension BufferedInputStream {
     public func consume(count: Int) throws {
         guard buffered < count else {
-            readPosition += count
+            advanceReadPosition(by: count)
             return
         }
 
@@ -130,8 +129,8 @@ extension BufferedInputStream {
             read = try baseStream.read(to: storage, byteCount: allocated)
             rest -= read
         }
-        readPosition = storage + (-rest)
-        writePosition = storage + read
+        advanceWritePosition(by: read)
+        advanceReadPosition(by: -rest)
     }
 
     public func consume(_ byte: UInt8) throws -> Bool {
@@ -148,7 +147,7 @@ extension BufferedInputStream {
         guard next == byte else {
             return false
         }
-        readPosition += 1
+        advanceReadPosition(by: 1)
         return true
     }
 
@@ -168,7 +167,7 @@ extension BufferedInputStream {
             if !predicate(byte.pointee) {
                 return
             }
-            readPosition += 1
+            advanceReadPosition(by: 1)
         }
     }
 }
@@ -179,13 +178,13 @@ extension BufferedInputStream {
         guard used < allocated else {
             throw StreamError.notEnoughSpace
         }
-        let read = try baseStream.read(
+        let count = try baseStream.read(
             to: writePosition,
             byteCount: allocated - used)
-        guard read > 0 else {
+        guard count > 0 else {
             return false
         }
-        writePosition += read
+        advanceWritePosition(by: count)
         return true
     }
 
@@ -206,25 +205,5 @@ extension BufferedInputStream {
         default:
             reallocate(byteCount: (buffered + requested) * 2)
         }
-    }
-
-    func shift() {
-        let count = buffered
-        storage.copyMemory(from: readPosition, byteCount: count)
-        readPosition = storage
-        writePosition = storage + count
-    }
-
-    func reallocate(byteCount: Int) {
-        let count = buffered
-        let storage = UnsafeMutableRawPointer.allocate(
-            byteCount: byteCount,
-            alignment: MemoryLayout<UInt>.alignment)
-        storage.copyMemory(from: self.readPosition, byteCount: count)
-        self.storage.deallocate()
-        self.storage = storage
-        self.allocated = byteCount
-        self.readPosition = storage
-        self.writePosition = storage + count
     }
 }

@@ -7,15 +7,21 @@ public class BufferedInputStream<T: InputStream> {
 
     var expandable: Bool
 
-    // FIXME: internal(set) + mutating from @inlinable = crash
-    public public(set) var writePosition: UnsafeMutableRawPointer
-    public public(set) var readPosition: UnsafeMutableRawPointer {
-        @inline(__always) didSet {
-            if readPosition == writePosition {
-                readPosition = storage
-                writePosition = storage
-            }
+    public private(set) var writePosition: UnsafeMutableRawPointer
+    public private(set) var readPosition: UnsafeMutableRawPointer
+
+    @usableFromInline
+    func advanceReadPosition(by count: Int) {
+        guard readPosition + count < writePosition else {
+            clear()
+            return
         }
+        readPosition += count
+    }
+
+    @usableFromInline
+    func advanceWritePosition(by count: Int) {
+        writePosition += count
     }
 
     public var buffered: Int {
@@ -46,12 +52,32 @@ public class BufferedInputStream<T: InputStream> {
     }
 
     deinit {
-        storage.deallocate()
+        self.storage.deallocate()
     }
 
     public func clear() {
-        readPosition = storage
-        writePosition = storage
+        self.readPosition = storage
+        self.writePosition = storage
+    }
+
+    func shift() {
+        let count = buffered
+        self.storage.copyMemory(from: readPosition, byteCount: count)
+        self.readPosition = storage
+        self.writePosition = storage + count
+    }
+
+    func reallocate(byteCount: Int) {
+        let count = buffered
+        let storage = UnsafeMutableRawPointer.allocate(
+            byteCount: byteCount,
+            alignment: MemoryLayout<UInt>.alignment)
+        storage.copyMemory(from: self.readPosition, byteCount: count)
+        self.storage.deallocate()
+        self.storage = storage
+        self.allocated = byteCount
+        self.readPosition = storage
+        self.writePosition = storage + count
     }
 }
 
@@ -93,7 +119,7 @@ extension BufferedInputStream: InputStream {
     @inline(__always)
     private func read(_ count: Int) -> UnsafeMutableRawPointer {
         let pointer = readPosition
-        readPosition += count
+        advanceReadPosition(by: count)
         return pointer
     }
 

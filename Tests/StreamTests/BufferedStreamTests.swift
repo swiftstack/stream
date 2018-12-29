@@ -25,7 +25,7 @@ class BufferedStreamTests: TestCase {
 
         func read(count: Int) -> [UInt8] {
             var buffer = [UInt8](repeating: 0, count: count)
-            assertEqual(try stream.read(to: &buffer), count)
+            assertEqual(try stream.read(to: &buffer, byteCount: count), count)
             return buffer
         }
 
@@ -46,6 +46,15 @@ class BufferedStreamTests: TestCase {
         assertEqual(stream.buffered, 1)
         assertEqual(read(count: 13), [9,0,1,2,3,4,5,6,7,8,9,10,11])
         assertEqual(stream.buffered, 0)
+        // test if stream resets if drained
+        stream.clear()
+        assertEqual(stream.buffered, 0)
+        _ = read(count: 1)
+        assertEqual(stream.buffered, 9)
+        _ = read(count: 9)
+        assertEqual(stream.buffered, 0)
+        assertEqual(stream.readPosition, stream.storage)
+        assertEqual(stream.writePosition, stream.storage)
     }
 
     func testBufferedOutputStream() {

@@ -13,7 +13,8 @@ let package = Package(
         )
     ],
     targets: [
-        .target(name: "Stream"),
+        .target(
+            name: "Stream"),
         .testTarget(
             name: "StreamTests",
             dependencies: ["Stream", "Test"])
