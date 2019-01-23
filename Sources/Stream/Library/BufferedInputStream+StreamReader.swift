@@ -127,6 +127,9 @@ extension BufferedInputStream {
         var read = 0
         while rest > 0 {
             read = try baseStream.read(to: storage, byteCount: allocated)
+            guard read > 0 else {
+                throw StreamError.insufficientData
+            }
             rest -= read
         }
         advanceWritePosition(by: read)

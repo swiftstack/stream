@@ -353,6 +353,13 @@ class BufferedStreamReaderTests: TestCase {
         }
     }
 
+    func testConsumeEmpty() {
+        scope {
+            let stream = BufferedInputStream(baseStream: InputByteStream([]))
+            assertThrowsError(try stream.consume(count: 1))
+        }
+    }
+
     func testFeedLessThanReadCount() {
         scope {
             let stream = BufferedInputStream(
