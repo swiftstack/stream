@@ -9,13 +9,17 @@ extension OutputByteStream: SubStreamWriter {
 }
 
 extension StreamWriter {
-    public func withSubStream<T: FixedWidthInteger>(
-        sizedBy type: T.Type,
+    public func withSubStreamWriter<Size: FixedWidthInteger>(
+        sizedBy type: Size.Type,
+        includingHeader: Bool = false,
         task: (SubStreamWriter) throws -> Void) throws
     {
         let output = OutputByteStream()
         try task(output)
-        try write(T(output.bytes.count))
+        let sizeHeader = includingHeader
+            ? Size(output.bytes.count + MemoryLayout<Size>.size)
+            : Size(output.bytes.count)
+        try write(sizeHeader)
         try write(output.bytes)
     }
 }

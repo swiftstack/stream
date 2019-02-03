@@ -10,17 +10,20 @@ extension UnsafeRawInputStream: SubStreamReader {
 }
 
 extension StreamReader {
-    public func withSubStream<H: FixedWidthInteger, T>(
-        sizedBy type: H.Type,
-        body: (SubStreamReader) throws -> T) throws -> T
+    public func withSubStreamReader<Size: FixedWidthInteger, Result>(
+        sizedBy type: Size.Type,
+        includingHeader: Bool = false,
+        body: (SubStreamReader) throws -> Result) throws -> Result
     {
-        let length = try read(type)
-        return try withSubStream(limitedBy: Int(length), body: body)
+        let length = includingHeader
+            ? Int(try read(type)) - MemoryLayout<Size>.size
+            : Int(try read(type))
+        return try withSubStreamReader(limitedBy: length, body: body)
     }
 
-    public func withSubStream<T>(
+    public func withSubStreamReader<Result>(
         limitedBy limit: Int,
-        body: (SubStreamReader) throws -> T) throws -> T
+        body: (SubStreamReader) throws -> Result) throws -> Result
     {
         return try read(count: limit) { bytes in
             let stream = UnsafeRawInputStream(
