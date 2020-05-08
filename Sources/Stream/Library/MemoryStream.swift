@@ -149,8 +149,9 @@ public final class MemoryStream: Stream, Seekable {
 extension MemoryStream {
     public func write<T: FixedWidthInteger>(_ value: T) throws {
         var value = value.bigEndian
-        _ = try write(from: UnsafeRawBufferPointer(
-            start: &value, count: MemoryLayout<T>.size))
+        try withUnsafePointer(to: &value) { pointer in
+            _ = try write(from: pointer, byteCount: MemoryLayout<T>.size)
+        }
     }
 
     public func read<T: FixedWidthInteger>(_ type: T.Type) throws -> T {

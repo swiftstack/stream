@@ -17,8 +17,8 @@ public class InputByteStream: InputStream {
         byteCount: Int) throws -> Int
     {
         let count = min(bytes.count - position, byteCount)
-        let source = UnsafeRawPointer(bytes).advanced(by: position)
-        pointer.copyMemory(from: source, byteCount: count)
+        let buffer = UnsafeMutableRawBufferPointer(start: pointer, count: count)
+        buffer.copyBytes(from: bytes[position..<position + count])
         position += count
         return count
     }

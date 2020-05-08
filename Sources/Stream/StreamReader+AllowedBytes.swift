@@ -15,11 +15,9 @@ public final class AllowedBytes {
         let buffer = UnsafeMutableBufferPointer<Bool>.allocate(capacity: 256)
         buffer.initialize(repeating: false)
 
-        var copy = table
-        let pointer = UnsafeMutableRawPointer(mutating: &copy)
-            .assumingMemoryBound(to: Bool.self)
-        let asciiBuffer = UnsafeBufferPointer(start: pointer, count: 128)
-        _ = buffer.initialize(from: asciiBuffer)
+        _ = withUnsafeBytes(of: table) { source in
+            buffer.initialize(from: source.bindMemory(to: Bool.self))
+        }
 
         self.buffer = UnsafeBufferPointer(buffer)
     }
