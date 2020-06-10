@@ -1,14 +1,14 @@
 public class InputByteStream: InputStream {
     public let bytes: [UInt8]
-
     public internal(set) var position = 0
-
-    public var isEmpty: Bool {
-        return position == bytes.count
-    }
+    public var isEmpty: Bool { position == bytes.count }
 
     public init(_ bytes: [UInt8]) {
         self.bytes = bytes
+    }
+
+    convenience public init(_ string: String) {
+        self.init([UInt8](string.utf8))
     }
 
     @inline(__always)
@@ -26,10 +26,8 @@ public class InputByteStream: InputStream {
 
 public class OutputByteStream: OutputStream {
     public var bytes: [UInt8]
-
-    public var position: Int {
-        return bytes.count
-    }
+    public var position: Int { bytes.count }
+    public var stringValue: String { .init(decoding: bytes, as: UTF8.self) }
 
     public init(reservingCapacity capacity: Int = 256) {
         bytes = []
