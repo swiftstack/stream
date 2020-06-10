@@ -77,6 +77,11 @@ extension StreamReader {
     }
 
     @inlinable
+    public func consume(set: Set<UInt8>) throws {
+        try consume(while: set.contains)
+    }
+
+    @inlinable
     public func next<T: Collection>(is elements: T) throws -> Bool
         where T.Element == UInt8
     {
