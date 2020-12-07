@@ -1,4 +1,4 @@
-public protocol StreamWriter: class {
+public protocol StreamWriter: AnyObject {
     func write(_ byte: UInt8) throws
     func write<T: FixedWidthInteger>(_ value: T) throws
     func write(_ bytes: [UInt8]) throws

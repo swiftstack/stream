@@ -3,7 +3,7 @@ public enum PredicateMode {
     case untilEnd
 }
 
-public protocol StreamReader: class {
+public protocol StreamReader: AnyObject {
     func cache(count: Int) throws -> Bool
 
     func peek() throws -> UInt8
