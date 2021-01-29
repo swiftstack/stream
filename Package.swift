@@ -4,9 +4,7 @@ import PackageDescription
 let package = Package(
     name: "Stream",
     products: [
-        .library(
-            name: "Stream",
-            targets: ["Stream"])
+        .library(name: "Stream", targets: ["Stream"])
     ],
     dependencies: [
         .package(name: "Test")
@@ -16,15 +14,34 @@ let package = Package(
             name: "Stream",
             swiftSettings: [
                 .unsafeFlags(["-Xfrontend", "-enable-experimental-concurrency"])
-            ]),
-        .testTarget(
-            name: "StreamTests",
-            dependencies: ["Stream", "Test"],
-            swiftSettings: [
-                .unsafeFlags(["-Xfrontend", "-enable-experimental-concurrency"])
             ])
     ]
 )
+
+// MARK: - tests
+
+addTestSuite(name: "Stream/BufferedInputStream")
+addTestSuite(name: "Stream/BufferedOutputStream")
+addTestSuite(name: "Stream/BufferedStream")
+addTestSuite(name: "Stream/BufferedStreamReader")
+addTestSuite(name: "Stream/BufferedStreamWriter")
+addTestSuite(name: "Stream/ByteStream")
+addTestSuite(name: "Stream/MemoryStream")
+addTestSuite(name: "Stream/Stream")
+addTestSuite(name: "Stream/StreamReader")
+addTestSuite(name: "Stream/SubStreamReader")
+addTestSuite(name: "Stream/SubStreamWriter")
+
+func addTestSuite(name: String) {
+    package.targets.append(
+        .target(
+            name: "Tests/" + name,
+            dependencies: ["Stream", "Test"],
+            path: "Tests/" + name,
+            swiftSettings: [
+                .unsafeFlags(["-Xfrontend", "-enable-experimental-concurrency"])
+            ]))
+}
 
 // MARK: - custom package source
 
