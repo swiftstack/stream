@@ -37,7 +37,9 @@ public class UnsafeRawOutputStream: OutputStream {
         self.position = 0
     }
 
-    public func write(from buffer: UnsafeRawPointer, byteCount: Int) throws -> Int {
+    public func write(
+        from buffer: UnsafeRawPointer, byteCount: Int
+    ) throws -> Int {
         let count = min(self.count - position, byteCount)
         guard count > 0 else {
             return 0

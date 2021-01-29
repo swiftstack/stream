@@ -31,19 +31,19 @@ extension StreamReader {
     @inline(__always)
     public func read<T>(
         allowedBytes: AllowedBytes,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
     {
         let buffer = allowedBytes.buffer
-        return try read(
+        return try await read(
             mode: .untilEnd,
             while: { buffer[Int($0)] },
             body: body)
     }
 
     @inline(__always)
-    public func read(allowedBytes: AllowedBytes) throws -> [UInt8] {
+    public func read(allowedBytes: AllowedBytes) async throws -> [UInt8] {
         let buffer = allowedBytes.buffer
-        return try read(while: { buffer[Int($0)] })
+        return try await read(while: { buffer[Int($0)] })
     }
 }
 

@@ -1,16 +1,16 @@
 extension BufferedInputStream: StreamReader {
-    public func cache(count: Int) throws -> Bool {
+    public func cache(count: Int) async throws -> Bool {
         if count > buffered {
             try ensure(count: count)
-            guard try feed() && buffered >= count else {
+            guard try await feed() && buffered >= count else {
                 return false
             }
         }
         return true
     }
 
-    public func peek() throws -> UInt8 {
-        guard try cache(count: 1) else {
+    public func peek() async throws -> UInt8 {
+        guard try await cache(count: 1) else {
             throw StreamError.insufficientData
         }
         return readPosition.assumingMemoryBound(to: UInt8.self).pointee
@@ -18,11 +18,11 @@ extension BufferedInputStream: StreamReader {
 
     public func peek<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
     {
         if count > buffered {
             try ensure(count: count)
-            guard try feed() && buffered >= count else {
+            guard try await feed() && buffered >= count else {
                 throw StreamError.insufficientData
             }
         }
@@ -34,9 +34,9 @@ extension BufferedInputStream: StreamReader {
 extension BufferedInputStream {
     // optimized version of read<T: FixedWidthInteger>()
     @inlinable // TODO: benchmark @inlinable
-    public func read(_ type: UInt8.Type) throws -> UInt8 {
+    public func read(_ type: UInt8.Type) async throws -> UInt8 {
         if buffered == 0 {
-            guard try feed() else {
+            guard try await feed() else {
                 throw StreamError.insufficientData
             }
         }
@@ -46,20 +46,20 @@ extension BufferedInputStream {
     }
 
     @inlinable
-    public func read<T: FixedWidthInteger>(_ type: T.Type) throws -> T {
-        var result: T = 0
-        try withUnsafeMutableBytes(of: &result) { pointer in
-            return try read(count: MemoryLayout<T>.size) { bytes in
+    public func read<T: FixedWidthInteger>(_ type: T.Type) async throws -> T {
+        return try await read(count: MemoryLayout<T>.size) { bytes in
+            var result: T = 0
+            withUnsafeMutableBytes(of: &result) { pointer in
                 pointer.copyMemory(from: bytes)
             }
+            return result.bigEndian
         }
-        return result.bigEndian
     }
 
     @inlinable
     public func read<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
     {
         if count > buffered {
             if count > allocated {
@@ -68,7 +68,7 @@ extension BufferedInputStream {
                 try ensure(count: count - buffered)
             }
 
-            while buffered < count, try feed() {}
+            while buffered < count, try await feed() {}
 
             guard count <= buffered else {
                 throw StreamError.insufficientData
@@ -83,13 +83,13 @@ extension BufferedInputStream {
     public func read<T>(
         mode: PredicateMode,
         while predicate: (UInt8) -> Bool,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
+        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
     {
         var read = 0
         while true {
             if read == buffered {
                 try ensure(count: 1)
-                guard try feed() else {
+                guard try await feed() else {
                     if mode == .untilEnd { break }
                     throw StreamError.insufficientData
                 }
@@ -111,7 +111,7 @@ extension BufferedInputStream {
 }
 
 extension BufferedInputStream {
-    public func consume(count: Int) throws {
+    public func consume(count: Int) async throws {
         guard buffered < count else {
             advanceReadPosition(by: count)
             return
@@ -126,7 +126,7 @@ extension BufferedInputStream {
 
         var read = 0
         while rest > 0 {
-            read = try baseStream.read(to: storage, byteCount: allocated)
+            read = try await baseStream.read(to: storage, byteCount: allocated)
             guard read > 0 else {
                 throw StreamError.insufficientData
             }
@@ -136,9 +136,9 @@ extension BufferedInputStream {
         advanceReadPosition(by: -rest)
     }
 
-    public func consume(_ byte: UInt8) throws -> Bool {
+    public func consume(_ byte: UInt8) async throws -> Bool {
         if buffered == 0 {
-            guard try feed() else {
+            guard try await feed() else {
                 throw StreamError.insufficientData
             }
         }
@@ -157,11 +157,11 @@ extension BufferedInputStream {
     @inlinable
     public func consume(
         mode: PredicateMode,
-        while predicate: (UInt8) -> Bool) throws
+        while predicate: (UInt8) -> Bool) async throws
     {
         while true {
             if buffered == 0 {
-                guard try feed() else {
+                guard try await feed() else {
                     if mode == .untilEnd { return }
                     throw StreamError.insufficientData
                 }
@@ -177,11 +177,11 @@ extension BufferedInputStream {
 
 extension BufferedInputStream {
     @usableFromInline
-    func feed() throws -> Bool {
+    func feed() async throws -> Bool {
         guard used < allocated else {
             throw StreamError.notEnoughSpace
         }
-        let count = try baseStream.read(
+        let count = try await baseStream.read(
             to: writePosition,
             byteCount: allocated - used)
         guard count > 0 else {

@@ -3,5 +3,5 @@ public enum SeekOrigin {
 }
 
 public protocol Seekable {
-    func seek(to offset: Int, from origin: SeekOrigin) throws
+    func seek(to offset: Int, from origin: SeekOrigin) async throws
 }

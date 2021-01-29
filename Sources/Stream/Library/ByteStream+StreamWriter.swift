@@ -27,7 +27,19 @@ extension OutputByteStream: StreamWriter {
         }
     }
 
-    public func flush() throws {
-        // nop
+    // MARK: Override StreamWriter async functions
+
+    public func write(_ bytes: UnsafeRawBufferPointer) throws {
+        try write(bytes.baseAddress!, byteCount: bytes.count)
     }
+
+    public func write(_ bytes: [UInt8]) throws {
+        try write(bytes, byteCount: bytes.count)
+    }
+
+    public func write(_ string: String) throws {
+        try write([UInt8](string.utf8))
+    }
+
+    public func flush() throws {}
 }

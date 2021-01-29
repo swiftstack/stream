@@ -12,19 +12,19 @@ extension Array: UnsafeRawBufferInitializable where Element == UInt8 {}
 
 extension StreamReader {
     @inlinable
-    public func peek<T>(count: Int, as type: T.Type) throws -> T
+    public func peek<T>(count: Int, as type: T.Type) async throws -> T
         where T: UnsafeRawBufferInitializable
     {
-        return try peek(count: count) { bytes in
+        return try await peek(count: count) { bytes in
             return T(bytes)
         }
     }
 
     @inlinable
-    public func read<T>(count: Int, as type: T.Type) throws -> T
+    public func read<T>(count: Int, as type: T.Type) async throws -> T
         where T: UnsafeRawBufferInitializable
     {
-        return try read(count: count) { bytes in
+        return try await read(count: count) { bytes in
             return T(bytes)
         }
     }
@@ -33,21 +33,21 @@ extension StreamReader {
     public func read<T: UnsafeRawBufferInitializable>(
         mode: PredicateMode,
         while predicate: (UInt8) -> Bool,
-        as type: T.Type) throws -> T
+        as type: T.Type) async throws -> T
     {
-        return try read(mode: mode, while: predicate) { bytes in
+        return try await read(mode: mode, while: predicate) { bytes in
             return T(bytes)
         }
     }
 
     @inlinable
-    public func readUntilEnd<T>(as type: T.Type) throws -> T
+    public func readUntilEnd<T>(as type: T.Type) async throws -> T
         where T: UnsafeRawBufferInitializable
     {
-        return try read(mode: .untilEnd, while: {_ in true}, as: type)
+        return try await read(mode: .untilEnd, while: { _ in true }, as: type)
     }
 
-    public func readUntilEnd() throws -> [UInt8] {
-        return try readUntilEnd(as: [UInt8].self)
+    public func readUntilEnd() async throws -> [UInt8] {
+        return try await readUntilEnd(as: [UInt8].self)
     }
 }

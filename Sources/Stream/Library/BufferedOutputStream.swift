@@ -23,7 +23,9 @@ public class BufferedOutputStream<T: OutputStream> {
     }
 
     deinit {
-        try? flush()
+        runAsyncAndBlock {
+            try? await self.flush()
+        }
         storage.deallocate()
     }
 }
@@ -31,7 +33,7 @@ public class BufferedOutputStream<T: OutputStream> {
 extension BufferedOutputStream: OutputStream {
     public func write(
         from buffer: UnsafeRawPointer,
-        byteCount: Int) throws -> Int
+        byteCount: Int) async throws -> Int
     {
         switch available - byteCount {
         // the bytes fit into the buffer
@@ -40,7 +42,7 @@ extension BufferedOutputStream: OutputStream {
                 .copyMemory(from: buffer, byteCount: byteCount)
             buffered += byteCount
             if buffered == allocated {
-                try flush()
+                try await flush()
             }
             return byteCount
 
@@ -50,7 +52,7 @@ extension BufferedOutputStream: OutputStream {
             storage.advanced(by: buffered)
                 .copyMemory(from: buffer, byteCount: count)
             buffered += count
-            try flush()
+            try await flush()
             let rest = buffer.advanced(by: count)
             storage.copyMemory(from: rest, byteCount: byteCount - count)
             buffered += byteCount - count
@@ -59,16 +61,18 @@ extension BufferedOutputStream: OutputStream {
         // we can't buffer the bytes, pass it directly into baseStream
         default:
             if buffered > 0 {
-                try flush()
+                try await flush()
             }
-            return try baseStream.write(from: buffer, byteCount: byteCount)
+            return try await baseStream.write(
+                from: buffer,
+                byteCount: byteCount)
         }
     }
 
-    public func flush() throws {
+    public func flush() async throws {
         var sent = 0
         while sent < buffered {
-            sent += try baseStream.write(
+            sent += try await baseStream.write(
                 from: storage.advanced(by: sent),
                 byteCount: buffered - sent)
         }
