@@ -13,10 +13,16 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "Stream"),
+            name: "Stream",
+            swiftSettings: [
+                .unsafeFlags(["-Xfrontend", "-enable-experimental-concurrency"])
+            ]),
         .testTarget(
             name: "StreamTests",
-            dependencies: ["Stream", "Test"])
+            dependencies: ["Stream", "Test"],
+            swiftSettings: [
+                .unsafeFlags(["-Xfrontend", "-enable-experimental-concurrency"])
+            ])
     ]
 )
 
