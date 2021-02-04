@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.4
 import PackageDescription
 
 let package = Package(
@@ -34,7 +34,7 @@ addTestSuite(name: "Stream/SubStreamWriter")
 
 func addTestSuite(name: String) {
     package.targets.append(
-        .target(
+        .executableTarget(
             name: "Tests/" + name,
             dependencies: ["Stream", "Test"],
             path: "Tests/" + name,
