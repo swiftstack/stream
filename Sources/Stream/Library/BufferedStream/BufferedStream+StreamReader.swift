@@ -1,37 +1,3 @@
-public class BufferedStream<T: Stream>: Stream {
-    public let inputStream: BufferedInputStream<T>
-    public let outputStream: BufferedOutputStream<T>
-
-    @inline(__always)
-    public init(baseStream: T, capacity: Int = 4096) {
-        inputStream = BufferedInputStream(
-            baseStream: baseStream, capacity: capacity)
-        outputStream = BufferedOutputStream(
-            baseStream: baseStream, capacity: capacity)
-    }
-
-    @inline(__always)
-    public func read(
-        to buffer: UnsafeMutableRawPointer,
-        byteCount: Int
-    ) async throws -> Int {
-        return try await inputStream.read(to: buffer, byteCount: byteCount)
-    }
-
-    @inline(__always)
-    public func write(
-        from buffer: UnsafeRawPointer,
-        byteCount: Int
-    ) async throws -> Int {
-        return try await outputStream.write(from: buffer, byteCount: byteCount)
-    }
-
-    @inline(__always)
-    public func flush() async throws {
-        try await outputStream.flush()
-    }
-}
-
 extension BufferedStream: StreamReader {
     public func cache(count: Int) async throws -> Bool {
         return try await inputStream.cache(count: count)
@@ -81,19 +47,5 @@ extension BufferedStream: StreamReader {
         while predicate: (UInt8) -> Bool) async throws
     {
         try await inputStream.consume(mode: mode, while: predicate)
-    }
-}
-
-extension BufferedStream: StreamWriter {
-    public func write(_ byte: UInt8) async throws {
-        try await outputStream.write(byte)
-    }
-
-    public func write<T: FixedWidthInteger>(_ value: T) async throws {
-        try await outputStream.write(value)
-    }
-
-    public func write(_ bytes: UnsafeRawPointer, byteCount: Int) async throws {
-        try await outputStream.write(bytes, byteCount: byteCount)
     }
 }
