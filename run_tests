@@ -13,6 +13,7 @@ export DYLD_LIBRARY_PATH=/Library/Developer/Toolchains/swift-latest.xctoolchain/
 .build/debug/Tests/Stream/BufferedStreamWriter
 .build/debug/Tests/Stream/ByteStream
 .build/debug/Tests/Stream/MemoryStream
+.build/debug/Tests/Stream/Numeric
 .build/debug/Tests/Stream/Stream
 .build/debug/Tests/Stream/StreamReader
 .build/debug/Tests/Stream/SubStreamReader
