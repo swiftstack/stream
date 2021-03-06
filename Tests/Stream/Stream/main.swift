@@ -23,15 +23,4 @@ test.case("OutputStream") {
     _ = try await outputStream.write(from: bytes, byteCount: 0)
 }
 
-test.case("CopyBytes") {
-    let input = TestStream()
-    let output = TestStream()
-
-    let written = try await input.write(from: [0,1,2,3,4,5,6,7,8,9])
-    expect(written == 10)
-    let copied = try await output.copyBytes(from: input, bufferSize: 3)
-    expect(copied == 10)
-    expect(output.storage == [0,1,2,3,4,5,6,7,8,9])
-}
-
 test.run()

@@ -41,15 +41,6 @@ test.case("OutputByteStream Numeric") {
     expect(try inputStream.read(UInt64.self) == 5)
 }
 
-test.case("OutputByteStream CopyBytes") {
-    let input = InputByteStream([0,1,2,3,4,5,6,7,8,9])
-    let output = OutputByteStream()
-
-    let copied = try await output.copyBytes(from: input, bufferSize: 3)
-    expect(copied == 10)
-    expect(output.bytes == [0,1,2,3,4,5,6,7,8,9])
-}
-
 test.case("OutputByteStream AdvancePositionBeforeCallback") {
     let input = InputByteStream([0,1,2,3,4,5,6,7,8,9])
     try await input.readUntilEnd { bytes in
