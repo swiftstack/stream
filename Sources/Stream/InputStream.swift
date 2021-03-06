@@ -5,17 +5,15 @@ public protocol InputStream {
     ) async throws -> Int
 }
 
+// @testable
 extension InputStream {
-    @inline(__always)
-    public func read(
+    func read(
         to buffer: UnsafeMutableRawBufferPointer
     ) async throws -> Int {
         return try await read(to: buffer.baseAddress!, byteCount: buffer.count)
     }
 
-    
-    @inline(__always)
-    public func read(to buffer: inout ArraySlice<UInt8>) async throws -> Int {
+    func read(to buffer: inout ArraySlice<UInt8>) async throws -> Int {
         // FIXME: [Concurrency]
         // return try buffer.withUnsafeMutableBytes { buffer in
         //     return try await read(to: buffer)
@@ -34,7 +32,7 @@ extension InputStream {
         return count
     }
 
-    public func read(to buffer: inout [UInt8]) async throws -> Int {
+    func read(to buffer: inout [UInt8]) async throws -> Int {
         // FIXME: [Concurrency]
         // return try buffer.withUnsafeMutableBytes { buffer in
         //     return try await read(to: buffer)
