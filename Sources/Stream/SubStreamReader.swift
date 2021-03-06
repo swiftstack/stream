@@ -3,7 +3,7 @@ public protocol SubStreamReader: StreamReader {
     var isEmpty: Bool { get }
 }
 
-extension InputByteStream: SubStreamReader {
+extension ByteArrayInputStream: SubStreamReader {
     public var limit: Int {
         return bytes.count
     }
@@ -27,7 +27,7 @@ extension StreamReader {
     {
         // FIXME: [Concurrency] optimize
         let bytes = try await read(count: limit)
-        let stream = InputByteStream(bytes)
+        let stream = ByteArrayInputStream(bytes)
         return try await body(stream)
     }
 }

@@ -1,14 +1,14 @@
 import Test
 @testable import Stream
 
-test.case("OutputByteStream") {
-    let outputStream  = OutputByteStream()
+test.case("ByteArrayOutputStream") {
+    let outputStream  = ByteArrayOutputStream()
     let bytes = [UInt8]()
     expect(try outputStream.write(from: bytes, byteCount: 0) == 0)
 }
 
-test.case("OutputByteStream Numeric") {
-    let outputStream  = OutputByteStream()
+test.case("ByteArrayOutputStream Numeric") {
+    let outputStream  = ByteArrayOutputStream()
 
     try outputStream.write(Int(-1))
     try outputStream.write(Int8(-2))
@@ -21,7 +21,7 @@ test.case("OutputByteStream Numeric") {
     try outputStream.write(UInt32(4))
     try outputStream.write(UInt64(5))
 
-    let inputStream  = InputByteStream(outputStream.bytes)
+    let inputStream  = ByteArrayInputStream(outputStream.bytes)
 
     expect(try inputStream.read(Int.self) == -1)
     expect(try inputStream.read(Int8.self) == -2)

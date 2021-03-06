@@ -2,7 +2,7 @@ public protocol SubStreamWriter: StreamWriter {
     var count: Int { get }
 }
 
-extension OutputByteStream: SubStreamWriter {
+extension ByteArrayOutputStream: SubStreamWriter {
     public var count: Int {
         return bytes.count
     }
@@ -14,7 +14,7 @@ extension StreamWriter {
         includingHeader: Bool = false,
         task: (SubStreamWriter) async throws -> Void) async throws
     {
-        let output = OutputByteStream()
+        let output = ByteArrayOutputStream()
         try await task(output)
         let sizeHeader = includingHeader
             ? Size(output.bytes.count + MemoryLayout<Size>.size)

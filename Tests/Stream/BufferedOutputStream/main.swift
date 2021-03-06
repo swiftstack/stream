@@ -2,7 +2,7 @@ import Test
 @testable import Stream
 
 test.case("BufferedOutputStream") {
-    let byteStream = OutputByteStream()
+    let byteStream = ByteArrayOutputStream()
     let stream = BufferedOutputStream(baseStream: byteStream, capacity: 10)
     expect(stream.allocated == 10)
     expect(stream.buffered == 0)
@@ -43,7 +43,7 @@ test.case("BufferedOutputStream") {
 }
 
 test.case("BufferedOutputStreamDefaultCapacity") {
-    let stream = BufferedOutputStream(baseStream: OutputByteStream())
+    let stream = BufferedOutputStream(baseStream: ByteArrayOutputStream())
     expect(stream.allocated == 256)
     expect(stream.buffered == 0)
 }

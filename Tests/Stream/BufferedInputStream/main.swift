@@ -57,7 +57,7 @@ test.case("BufferedInputStream") {
 }
 
 test.case("BufferedInputStreamDefaultCapacity") {
-    let stream = BufferedInputStream(baseStream: InputByteStream([]))
+    let stream = BufferedInputStream(baseStream: ByteArrayInputStream([]))
     expect(stream.allocated == 256)
     expect(stream.buffered == 0)
 }

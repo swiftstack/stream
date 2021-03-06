@@ -1,4 +1,4 @@
-public class InputByteStream: InputStream {
+public class ByteArrayInputStream: InputStream {
     public let bytes: [UInt8]
     public internal(set) var position = 0
     public var isEmpty: Bool { position == bytes.count }
@@ -23,3 +23,6 @@ public class InputByteStream: InputStream {
         return count
     }
 }
+
+@available(*, renamed: "ByteArrayInputStream")
+public typealias InputByteStream = ByteArrayInputStream

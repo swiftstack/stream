@@ -1,4 +1,4 @@
-extension InputByteStream: StreamReader {
+extension ByteArrayInputStream: StreamReader {
     public var buffered: Int {
         return bytes.count - position
     }

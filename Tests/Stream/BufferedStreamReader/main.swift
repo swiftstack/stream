@@ -349,7 +349,7 @@ test.case("ConsumeUntil") {
 }
 
 test.case("ConsumeEmpty") {
-    let stream = BufferedInputStream(baseStream: InputByteStream([]))
+    let stream = BufferedInputStream(baseStream: ByteArrayInputStream([]))
     expect(throws: StreamError.insufficientData) {
         try await stream.consume(count: 1)
     }
@@ -368,7 +368,7 @@ test.case("FeedLessThanReadCount") {
 
 test.case("AdvancePositionBeforeCallback") {
     let stream = BufferedInputStream(
-        baseStream: InputByteStream([0,1,2,3,4,5,6,7,8,9]))
+        baseStream: ByteArrayInputStream([0,1,2,3,4,5,6,7,8,9]))
     try await stream.readUntilEnd { bytes in
         expect(stream.readPosition == stream.writePosition)
     }
@@ -376,7 +376,7 @@ test.case("AdvancePositionBeforeCallback") {
 
 test.case("ReadLine") {
     let stream = BufferedInputStream(
-        baseStream: InputByteStream([UInt8]("line1\r\nline2\n".utf8)))
+        baseStream: ByteArrayInputStream([UInt8]("line1\r\nline2\n".utf8)))
     expect(try await stream.readLine() == "line1")
     expect(try await stream.readLine() == "line2")
 }

@@ -3,7 +3,7 @@ import Test
 
 // FIXME: [Concurrency] crash on m1
 test.case("SizedBy") {
-    let stream = OutputByteStream()
+    let stream = ByteArrayOutputStream()
     try await stream.withSubStreamWriter(sizedBy: UInt16.self) { stream in
         return try await stream.write("Hello, World!")
     }
@@ -12,7 +12,7 @@ test.case("SizedBy") {
 }
 
 test.case("SizedByIncludingHeader") {
-    let stream = OutputByteStream()
+    let stream = ByteArrayOutputStream()
     try await stream.withSubStreamWriter(
         sizedBy: UInt16.self,
         includingHeader: true)

@@ -1,4 +1,4 @@
-extension OutputByteStream: StreamWriter {
+extension ByteArrayOutputStream: StreamWriter {
     public var buffered: Int {
         return bytes.count - position
     }

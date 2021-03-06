@@ -1,4 +1,4 @@
-public class OutputByteStream: OutputStream {
+public class ByteArrayOutputStream: OutputStream {
     public var bytes: [UInt8]
     public var position: Int { bytes.count }
     public var stringValue: String { .init(decoding: bytes, as: UTF8.self) }
@@ -19,3 +19,6 @@ public class OutputByteStream: OutputStream {
         return byteCount
     }
 }
+
+@available(*, renamed: "ByteArrayOutputStream")
+public typealias OutputByteStream = ByteArrayOutputStream
