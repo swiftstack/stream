@@ -1,1 +1,1 @@
-public protocol Stream: InputStream, OutputStream {}
+public typealias Stream = InputStream & OutputStream
