@@ -23,9 +23,6 @@ public class BufferedOutputStream<T: OutputStream> {
     }
 
     deinit {
-        runAsyncAndBlock {
-            try? await self.flush()
-        }
         storage.deallocate()
     }
 }
