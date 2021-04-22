@@ -11,7 +11,7 @@ public class ByteArrayOutputStream: OutputStream {
     @inline(__always)
     public func write(
         from buffer: UnsafeRawPointer,
-        byteCount: Int) throws -> Int
+        byteCount: Int) -> Int
     {
         bytes.append(contentsOf: UnsafeRawBufferPointer(
             start: buffer,

@@ -4,22 +4,22 @@ import Test
 test.case("ByteArrayOutputStream") {
     let outputStream  = ByteArrayOutputStream()
     let bytes = [UInt8]()
-    expect(try outputStream.write(from: bytes, byteCount: 0) == 0)
+    expect(outputStream.write(from: bytes, byteCount: 0) == 0)
 }
 
 test.case("ByteArrayOutputStream Numeric") {
     let outputStream  = ByteArrayOutputStream()
 
-    try outputStream.write(Int(-1))
-    try outputStream.write(Int8(-2))
-    try outputStream.write(Int16(-3))
-    try outputStream.write(Int32(-4))
-    try outputStream.write(Int64(-5))
-    try outputStream.write(UInt(1))
-    try outputStream.write(UInt8(2))
-    try outputStream.write(UInt16(3))
-    try outputStream.write(UInt32(4))
-    try outputStream.write(UInt64(5))
+    outputStream.write(Int(-1))
+    outputStream.write(Int8(-2))
+    outputStream.write(Int16(-3))
+    outputStream.write(Int32(-4))
+    outputStream.write(Int64(-5))
+    outputStream.write(UInt(1))
+    outputStream.write(UInt8(2))
+    outputStream.write(UInt16(3))
+    outputStream.write(UInt32(4))
+    outputStream.write(UInt64(5))
 
     let inputStream  = ByteArrayInputStream(outputStream.bytes)
 
