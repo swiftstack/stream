@@ -13,6 +13,7 @@ let package = Package(
         .target(
             name: "Stream",
             swiftSettings: [
+                .unsafeFlags(["-Xfrontend", "-disable-availability-checking"]),
                 .unsafeFlags(["-Xfrontend", "-enable-experimental-concurrency"])
             ])
     ]
@@ -41,6 +42,7 @@ func addTestSuite(name: String) {
             dependencies: ["Stream", "Test"],
             path: "Tests/" + name,
             swiftSettings: [
+                .unsafeFlags(["-Xfrontend", "-disable-availability-checking"]),
                 .unsafeFlags(["-Xfrontend", "-enable-experimental-concurrency"])
             ]))
 }
