@@ -118,7 +118,7 @@ test.case("ReadFixedCapacity") {
     expect(stream.readPosition == stream.storage)
     expect(stream.writePosition == stream.storage)
 
-    expect(throws: StreamError.notEnoughSpace) {
+    await expect(throws: StreamError.notEnoughSpace) {
         try await stream.read(count: 11)
     }
 
@@ -147,7 +147,7 @@ test.case("ReadByte") {
     expect(try await stream.read(UInt8.self) == 2)
     expect(try await stream.read(UInt8.self) == 2)
 
-    expect(throws: StreamError.insufficientData) {
+    await expect(throws: StreamError.insufficientData) {
         try await stream.read(UInt8.self)
     }
 }
@@ -175,7 +175,7 @@ test.case("ReadWhileUntilEnd") {
         baseStream: TestStream(byteLimit: 5),
         capacity: 5)
 
-    expect(throws: StreamError.insufficientData) {
+    await expect(throws: StreamError.insufficientData) {
         try await stream.read(mode: .strict, while: { $0 == 1 })
     }
     // NOTE: does not consume bytes on error
@@ -211,7 +211,7 @@ test.case("Peek") {
     expect(stream.readPosition == stream.storage)
     expect(stream.writePosition == stream.storage + 10)
 
-    expect(throws: StreamError.notEnoughSpace) {
+    await expect(throws: StreamError.notEnoughSpace) {
         try await stream.cache(count: 15)
     }
 
@@ -283,7 +283,7 @@ test.case("ConsumeByte") {
     expect(try await stream.consume(UInt8(1)) == true)
     expect(stream.buffered == 0)
 
-    expect(throws: StreamError.insufficientData) {
+    await expect(throws: StreamError.insufficientData) {
         try await stream.consume(1)
     }
 }
@@ -350,7 +350,7 @@ test.case("ConsumeUntil") {
 
 test.case("ConsumeEmpty") {
     let stream = BufferedInputStream(baseStream: ByteArrayInputStream([]))
-    expect(throws: StreamError.insufficientData) {
+    await expect(throws: StreamError.insufficientData) {
         try await stream.consume(count: 1)
     }
 }
