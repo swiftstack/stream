@@ -4,10 +4,10 @@ import PackageDescription
 let package = Package(
     name: "Stream",
     products: [
-        .library(name: "Stream", targets: ["Stream"])
+        .library(name: "Stream", targets: ["Stream"]),
     ],
     dependencies: [
-        .package(name: "Test")
+        .package(name: "Test"),
     ],
     targets: [
         .target(name: "Stream"),
