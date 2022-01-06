@@ -10,12 +10,7 @@ let package = Package(
         .package(name: "Test")
     ],
     targets: [
-        .target(
-            name: "Stream",
-            swiftSettings: [
-                .unsafeFlags(["-Xfrontend", "-disable-availability-checking"]),
-                .unsafeFlags(["-Xfrontend", "-enable-experimental-concurrency"])
-            ])
+        .target(name: "Stream"),
     ]
 )
 
@@ -40,11 +35,7 @@ func addTestSuite(name: String) {
         .executableTarget(
             name: "Tests/" + name,
             dependencies: ["Stream", "Test"],
-            path: "Tests/" + name,
-            swiftSettings: [
-                .unsafeFlags(["-Xfrontend", "-disable-availability-checking"]),
-                .unsafeFlags(["-Xfrontend", "-enable-experimental-concurrency"])
-            ]))
+            path: "Tests/" + name))
 }
 
 // MARK: - custom package source
