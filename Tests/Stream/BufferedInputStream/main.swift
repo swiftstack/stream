@@ -16,7 +16,7 @@ class TestInputStreamSequence: InputStream {
     }
 }
 
-test.case("BufferedInputStream") {
+test("BufferedInputStream") {
     let baseStream = TestInputStreamSequence()
     let stream = BufferedInputStream(baseStream: baseStream, capacity: 10)
     expect(stream.allocated == 10)
@@ -56,10 +56,10 @@ test.case("BufferedInputStream") {
     expect(stream.writePosition == stream.storage)
 }
 
-test.case("BufferedInputStreamDefaultCapacity") {
+test("BufferedInputStreamDefaultCapacity") {
     let stream = BufferedInputStream(baseStream: ByteArrayInputStream([]))
     expect(stream.allocated == 256)
     expect(stream.buffered == 0)
 }
 
-test.run()
+await run()

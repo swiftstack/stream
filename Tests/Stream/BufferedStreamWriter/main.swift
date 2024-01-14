@@ -1,7 +1,7 @@
 import Test
 @testable import Stream
 
-test.case("WriteByte") {
+test("WriteByte") {
     let stream = ByteArrayOutputStream()
     let output = BufferedOutputStream(baseStream: stream, capacity: 5)
 
@@ -11,4 +11,4 @@ test.case("WriteByte") {
     expect(stream.bytes == [42])
 }
 
-test.run()
+await run()

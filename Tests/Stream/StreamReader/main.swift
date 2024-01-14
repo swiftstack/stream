@@ -1,14 +1,14 @@
 import Test
 @testable import Stream
 
-test.case("UntilEnd") {
+test("UntilEnd") {
     let helloBytes = [UInt8]("Hello, World!".utf8)
     let stream = ByteArrayInputStream(helloBytes)
     let bytes = try await stream.readUntilEnd()
     expect(bytes == helloBytes)
 }
 
-test.case("UntilEndAsString") {
+test("UntilEndAsString") {
     let helloString = "Hello, World!"
     let helloBytes = [UInt8](helloString.utf8)
     let stream = ByteArrayInputStream(helloBytes)
@@ -16,7 +16,7 @@ test.case("UntilEndAsString") {
     expect(string == helloString)
 }
 
-test.case("ReadLine") {
+test("ReadLine") {
     let lines = "Hello, World!\r\nHello, World!\r\n"
     let stream = ByteArrayInputStream([UInt8](lines.utf8))
 
@@ -25,4 +25,4 @@ test.case("ReadLine") {
     expect(try await stream.readLine() == nil)
 }
 
-test.run()
+await run()

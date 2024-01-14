@@ -1,35 +1,35 @@
 import Test
 @testable import Stream
 
-test.case("MemoryStream") {
+test("MemoryStream") {
     let stream = MemoryStream()
     expect((stream as Any) is MemoryStream)
 }
 
-test.case("InputStream") {
+test("InputStream") {
     let stream = MemoryStream()
     expect((stream as Any) is InputStream)
 }
 
-test.case("OutputStream") {
+test("OutputStream") {
     let stream = MemoryStream()
     expect((stream as Any) is OutputStream)
 }
 
-test.case("InitialSize") {
+test("InitialSize") {
     let stream = MemoryStream()
     expect(stream.capacity == 0)
     expect(stream.position == 0)
     expect(stream.remain == 0)
 }
 
-test.case("WriteEmpty") {
+test("WriteEmpty") {
     let stream = MemoryStream()
     let written = try stream.write(from: [], byteCount: 0)
     expect(written == 0)
 }
 
-test.case("ReadEmpty") {
+test("ReadEmpty") {
     let stream = MemoryStream()
     var buffer: [UInt8] = [0]
 
@@ -37,7 +37,7 @@ test.case("ReadEmpty") {
     expect(read == 0)
 }
 
-test.case("Seek") {
+test("Seek") {
     let stream = MemoryStream()
     expect((stream as Any) is Seekable)
     expect(stream.position == 0)
@@ -89,7 +89,7 @@ test.case("Seek") {
     }
 }
 
-test.case("Write") {
+test("Write") {
     let stream = MemoryStream()
     let data: [UInt8] = [1, 2, 3, 4]
 
@@ -120,7 +120,7 @@ test.case("Write") {
     expect(buffer == data)
 }
 
-test.case("Read") {
+test("Read") {
     let stream = MemoryStream()
     let data: [UInt8] = [1, 2, 3, 4]
     _ = try stream.write(from: data, byteCount: 4)
@@ -151,7 +151,7 @@ test.case("Read") {
     expect(stream.count == 4)
 }
 
-test.case("Reallocate") {
+test("Reallocate") {
     let stream = MemoryStream()
     let data: [UInt8] = [1, 2, 3, 4, 5, 6, 7, 8]
 
@@ -182,7 +182,7 @@ test.case("Reallocate") {
     expect(stream.count == 308)
 }
 
-test.case("Capacity") {
+test("Capacity") {
     let stream = MemoryStream(capacity: 4)
     let data: [UInt8] = [1, 2, 3, 4]
     _ = try stream.write(from: data, byteCount: 2)
@@ -192,7 +192,7 @@ test.case("Capacity") {
     }
 }
 
-test.case("Trivial") {
+test("Trivial") {
     let stream = MemoryStream()
     var buffer = [UInt8](repeating: 0, count: 8)
 
@@ -236,7 +236,7 @@ test.case("Trivial") {
     }
 }
 
-test.case("Buffer") {
+test("Buffer") {
     let stream = MemoryStream(capacity: 4)
     let data: [UInt8] = [1, 2, 3, 4]
 
@@ -249,4 +249,4 @@ test.case("Buffer") {
     expect([1, 2, 3, 4] == [UInt8](stream.buffer))
 }
 
-test.run()
+await run()

@@ -29,7 +29,7 @@ fileprivate class TestStream: InputStream {
     }
 }
 
-test.case("Read") {
+test("Read") {
     let stream = BufferedInputStream(
         baseStream: TestStream(),
         capacity: 1)
@@ -87,7 +87,7 @@ test.case("Read") {
     expect(stream.allocated == 40)
 }
 
-test.case("ReadReservingCapacity") {
+test("ReadReservingCapacity") {
     let stream = BufferedInputStream(
         baseStream: TestStream(),
         capacity: 10)
@@ -105,7 +105,7 @@ test.case("ReadReservingCapacity") {
     expect(stream.writePosition == stream.storage)
 }
 
-test.case("ReadFixedCapacity") {
+test("ReadFixedCapacity") {
     let stream = BufferedInputStream(
         baseStream: TestStream(),
         capacity: 10,
@@ -137,7 +137,7 @@ test.case("ReadFixedCapacity") {
     expect(stream.writePosition == stream.storage + 10)
 }
 
-test.case("ReadByte") {
+test("ReadByte") {
     let stream = BufferedInputStream(
         baseStream: TestStream(byteLimit: 4),
         capacity: 2)
@@ -152,7 +152,7 @@ test.case("ReadByte") {
     }
 }
 
-test.case("ReadWhile") {
+test("ReadWhile") {
     let stream = BufferedInputStream(
         baseStream: TestStream(),
         capacity: 5)
@@ -170,7 +170,7 @@ test.case("ReadWhile") {
     expect(stream.writePosition == stream.storage + 26)
 }
 
-test.case("ReadWhileUntilEnd") {
+test("ReadWhileUntilEnd") {
     let stream = BufferedInputStream(
         baseStream: TestStream(byteLimit: 5),
         capacity: 5)
@@ -184,7 +184,7 @@ test.case("ReadWhileUntilEnd") {
     _ = try await stream.read(mode: .untilEnd, while: { $0 == 1 })
 }
 
-test.case("ReadUntil") {
+test("ReadUntil") {
     let stream = BufferedInputStream(
         baseStream: TestStream(),
         capacity: 5)
@@ -202,7 +202,7 @@ test.case("ReadUntil") {
     expect(stream.writePosition == stream.storage + 26)
 }
 
-test.case("Peek") {
+test("Peek") {
     let stream = BufferedInputStream(
         baseStream: TestStream(byteLimit: 10),
         capacity: 10,
@@ -224,7 +224,7 @@ test.case("Peek") {
     expect(try await stream.cache(count: 5) == false)
 }
 
-test.case("Consume") {
+test("Consume") {
     let stream = BufferedInputStream(
         baseStream: TestStream(),
         capacity: 10)
@@ -247,7 +247,7 @@ test.case("Consume") {
     expect(stream.writePosition == stream.storage + 10)
 }
 
-test.case("ConsumeNotExpandable") {
+test("ConsumeNotExpandable") {
     let stream = BufferedInputStream(
         baseStream: TestStream(),
         capacity: 10,
@@ -270,7 +270,7 @@ test.case("ConsumeNotExpandable") {
     expect(stream.writePosition == stream.storage)
 }
 
-test.case("ConsumeByte") {
+test("ConsumeByte") {
     let stream = BufferedInputStream(baseStream: TestStream(byteLimit: 2))
     expect(stream.buffered == 0)
 
@@ -288,7 +288,7 @@ test.case("ConsumeByte") {
     }
 }
 
-test.case("ConsumeWhile") {
+test("ConsumeWhile") {
     let stream = BufferedInputStream(
         baseStream: TestStream(),
         capacity: 2)
@@ -318,7 +318,7 @@ test.case("ConsumeWhile") {
     expect(stream.writePosition == stream.storage + 24)
 }
 
-test.case("ConsumeUntil") {
+test("ConsumeUntil") {
     let stream = BufferedInputStream(
         baseStream: TestStream(),
         capacity: 2)
@@ -348,14 +348,14 @@ test.case("ConsumeUntil") {
     expect(stream.writePosition == stream.storage + 24)
 }
 
-test.case("ConsumeEmpty") {
+test("ConsumeEmpty") {
     let stream = BufferedInputStream(baseStream: ByteArrayInputStream([]))
     await expect(throws: StreamError.insufficientData) {
         try await stream.consume(count: 1)
     }
 }
 
-test.case("FeedLessThanReadCount") {
+test("FeedLessThanReadCount") {
     let stream = BufferedInputStream(
         baseStream: TestStream(byteLimit: 20),
         capacity: 10)
@@ -366,7 +366,7 @@ test.case("FeedLessThanReadCount") {
     expect([UInt8](buffer) == [UInt8](repeating: 1, count: 20))
 }
 
-test.case("AdvancePositionBeforeCallback") {
+test("AdvancePositionBeforeCallback") {
     let stream = BufferedInputStream(
         baseStream: ByteArrayInputStream([0,1,2,3,4,5,6,7,8,9]))
     try await stream.readUntilEnd { bytes in
@@ -374,11 +374,11 @@ test.case("AdvancePositionBeforeCallback") {
     }
 }
 
-test.case("ReadLine") {
+test("ReadLine") {
     let stream = BufferedInputStream(
         baseStream: ByteArrayInputStream([UInt8]("line1\r\nline2\n".utf8)))
     expect(try await stream.readLine() == "line1")
     expect(try await stream.readLine() == "line2")
 }
 
-test.run()
+await run()
