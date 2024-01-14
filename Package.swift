@@ -16,9 +16,20 @@ let package = Package(
         .package(name: "Test"),
     ],
     targets: [
-        .target(name: "Stream"),
+        .target(
+            name: "Stream",
+            swiftSettings: swift6),
     ]
 )
+
+let swift6: [SwiftSetting] = [
+    .enableUpcomingFeature("ConciseMagicFile"),
+    .enableUpcomingFeature("ForwardTrailingClosures"),
+    .enableUpcomingFeature("ExistentialAny"),
+    .enableUpcomingFeature("StrictConcurrency"),
+    .enableUpcomingFeature("ImplicitOpenExistentials"),
+    .enableUpcomingFeature("BareSlashRegexLiterals"),
+]
 
 // MARK: - tests
 
@@ -44,7 +55,8 @@ func addTestSuite(name: String) {
                 .target(name: "Stream"),
                 .product(name: "Test", package: "test"),
             ],
-            path: "Tests/" + name))
+            path: "Tests/" + name,
+            swiftSettings: swift6))
 }
 
 // MARK: - custom package source

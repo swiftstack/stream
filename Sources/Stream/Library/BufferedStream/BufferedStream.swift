@@ -1,9 +1,9 @@
-public class BufferedStream<T: Stream>: Stream {
-    public let inputStream: BufferedInputStream<T>
-    public let outputStream: BufferedOutputStream<T>
+public class BufferedStream<BaseStream: Stream>: Stream {
+    public let inputStream: BufferedInputStream<BaseStream>
+    public let outputStream: BufferedOutputStream<BaseStream>
 
     @inline(__always)
-    public init(baseStream: T, capacity: Int = 4096) {
+    public init(baseStream: BaseStream, capacity: Int = 4096) {
         inputStream = BufferedInputStream(
             baseStream: baseStream, capacity: capacity)
         outputStream = BufferedOutputStream(
