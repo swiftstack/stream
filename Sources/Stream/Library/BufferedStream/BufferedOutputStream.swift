@@ -1,5 +1,5 @@
-public class BufferedOutputStream<T: OutputStream> {
-    public let baseStream: T
+public class BufferedOutputStream<BaseStream: OutputStream> {
+    public let baseStream: BaseStream
 
     let storage: UnsafeMutableRawPointer
     let allocated: Int
@@ -10,7 +10,7 @@ public class BufferedOutputStream<T: OutputStream> {
         return allocated - buffered
     }
 
-    public init(baseStream: T, capacity: Int = 256) {
+    public init(baseStream: BaseStream, capacity: Int = 256) {
         guard capacity > 0 else {
             fatalError("capacity must be > 0")
         }

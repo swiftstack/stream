@@ -8,12 +8,12 @@ test("MemoryStream") {
 
 test("InputStream") {
     let stream = MemoryStream()
-    expect((stream as Any) is InputStream)
+    expect((stream as Any) is any InputStream)
 }
 
 test("OutputStream") {
     let stream = MemoryStream()
-    expect((stream as Any) is OutputStream)
+    expect((stream as Any) is any OutputStream)
 }
 
 test("InitialSize") {
@@ -25,7 +25,7 @@ test("InitialSize") {
 
 test("WriteEmpty") {
     let stream = MemoryStream()
-    let written = try stream.write(from: [], byteCount: 0)
+    let written = try stream.write(from: [UInt8](), byteCount: 0)
     expect(written == 0)
 }
 
@@ -39,7 +39,7 @@ test("ReadEmpty") {
 
 test("Seek") {
     let stream = MemoryStream()
-    expect((stream as Any) is Seekable)
+    expect((stream as Any) is any Seekable)
     expect(stream.position == 0)
     expect(stream.remain == 0)
     expect(stream.count == 0)

@@ -1,5 +1,5 @@
-public class BufferedInputStream<T: InputStream> {
-    public let baseStream: T
+public class BufferedInputStream<BaseStream: InputStream> {
+    public let baseStream: BaseStream
 
     @usableFromInline
     var storage: UnsafeMutableRawPointer
@@ -36,7 +36,11 @@ public class BufferedInputStream<T: InputStream> {
         }
     }
 
-    public init(baseStream: T, capacity: Int = 256, expandable: Bool = true) {
+    public init(
+        baseStream: BaseStream,
+        capacity: Int = 256,
+        expandable: Bool = true
+    ) {
         guard capacity > 0 else {
             fatalError("capacity must be > 0")
         }
