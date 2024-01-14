@@ -8,7 +8,9 @@ let package = Package(
         .macOS(.v13),
     ],
     products: [
-        .library(name: "Stream", targets: ["Stream"]),
+        .library(
+            name: "Stream",
+            targets: ["Stream"]),
     ],
     dependencies: [
         .package(name: "Test"),
@@ -38,7 +40,10 @@ func addTestSuite(name: String) {
     package.targets.append(
         .executableTarget(
             name: "Tests/" + name,
-            dependencies: ["Stream", "Test"],
+            dependencies: [
+                .target(name: "Stream"),
+                .product(name: "Test", package: "test"),
+            ],
             path: "Tests/" + name))
 }
 
@@ -84,6 +89,6 @@ extension Package.Dependency {
     static func package(name: String, source: Source) -> Package.Dependency {
         return source == .local
             ? .package(name: name, path: source.url(for: name))
-            : .package(name: name, url: source.url(for: name), .branch("dev"))
+            : .package(url: source.url(for: name), branch: "dev")
     }
 }
