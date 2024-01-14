@@ -9,7 +9,7 @@ extension BufferedStream {
     }
 }
 
-test.case("BufferedStream") {
+test("BufferedStream") {
     let stream = BufferedStream(baseStream: TestStream(), capacity: 10)
 
     let result = try await stream.write(from: [0,1,2,3,4])
@@ -24,7 +24,7 @@ test.case("BufferedStream") {
     expect(stream.inputStream.buffered == 0)
 }
 
-test.case("BufferedStreamDefaultCapacity") {
+test("BufferedStreamDefaultCapacity") {
     let stream = BufferedStream(baseStream: TestStream())
     expect(stream.inputStream.allocated == 4096)
     expect(stream.inputStream.buffered == 0)
@@ -32,4 +32,4 @@ test.case("BufferedStreamDefaultCapacity") {
     expect(stream.outputStream.buffered == 0)
 }
 
-test.run()
+await run()

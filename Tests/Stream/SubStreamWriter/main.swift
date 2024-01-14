@@ -2,7 +2,7 @@ import Test
 @testable import Stream
 
 // FIXME: [Concurrency] crash on m1
-test.case("SizedBy") {
+test("SizedBy") {
     let stream = ByteArrayOutputStream()
     try await stream.withSubStreamWriter(sizedBy: UInt16.self) { stream in
         return try await stream.write("Hello, World!")
@@ -11,7 +11,7 @@ test.case("SizedBy") {
     expect(stream.bytes[2...] == [UInt8]("Hello, World!".utf8)[...])
 }
 
-test.case("SizedByIncludingHeader") {
+test("SizedByIncludingHeader") {
     let stream = ByteArrayOutputStream()
     try await stream.withSubStreamWriter(
         sizedBy: UInt16.self,
@@ -23,4 +23,4 @@ test.case("SizedByIncludingHeader") {
     expect(stream.bytes[2...] == [UInt8]("Hello, World!".utf8)[...])
 }
 
-test.run()
+await run()

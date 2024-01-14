@@ -1,7 +1,7 @@
 import Test
 @testable import Stream
 
-test.case("BufferedOutputStream") {
+test("BufferedOutputStream") {
     let byteStream = ByteArrayOutputStream()
     let stream = BufferedOutputStream(baseStream: byteStream, capacity: 10)
     expect(stream.allocated == 10)
@@ -42,10 +42,10 @@ test.case("BufferedOutputStream") {
     expect(byteStream.bytes == [0,1])
 }
 
-test.case("BufferedOutputStreamDefaultCapacity") {
+test("BufferedOutputStreamDefaultCapacity") {
     let stream = BufferedOutputStream(baseStream: ByteArrayOutputStream())
     expect(stream.allocated == 256)
     expect(stream.buffered == 0)
 }
 
-test.run()
+await run()

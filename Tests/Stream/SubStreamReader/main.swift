@@ -1,7 +1,7 @@
 import Test
 @testable import Stream
 
-test.case("LimitedBy") {
+test("LimitedBy") {
     let stream = ByteArrayInputStream("Hello, World!") as StreamReader
     let hello = try await stream.withSubStreamReader(limitedBy: 5) { stream in
         return try await stream.readUntilEnd(as: String.self)
@@ -12,7 +12,7 @@ test.case("LimitedBy") {
     expect(world == "World!")
 }
 
-test.case("SizedBy") {
+test("SizedBy") {
     let bytes = [0x00, 0x05] + [UInt8]("Hello, World!".utf8)
     let stream = ByteArrayInputStream(bytes) as StreamReader
     let hello = try await stream.withSubStreamReader(sizedBy: UInt16.self)
@@ -25,7 +25,7 @@ test.case("SizedBy") {
     expect(world == "World!")
 }
 
-test.case("SizedByIncludingHeader") {
+test("SizedByIncludingHeader") {
     let bytes = [0x00, 0x07] + [UInt8]("Hello, World!".utf8)
     let stream = ByteArrayInputStream(bytes) as StreamReader
     let hello = try await  stream.withSubStreamReader(
@@ -40,4 +40,4 @@ test.case("SizedByIncludingHeader") {
     expect(world == "World!")
 }
 
-test.run()
+await run()
