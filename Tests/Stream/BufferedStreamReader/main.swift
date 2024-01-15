@@ -1,7 +1,7 @@
 import Test
 @testable import Stream
 
-fileprivate class TestStream: InputStream {
+private class TestStream: InputStream {
     var limit: Int?
     var counter: UInt8 = 0
 
@@ -368,8 +368,8 @@ test("FeedLessThanReadCount") {
 
 test("AdvancePositionBeforeCallback") {
     let stream = BufferedInputStream(
-        baseStream: ByteArrayInputStream([0,1,2,3,4,5,6,7,8,9]))
-    try await stream.readUntilEnd { bytes in
+        baseStream: ByteArrayInputStream([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]))
+    try await stream.readUntilEnd { _ in
         expect(stream.readPosition == stream.writePosition)
     }
 }

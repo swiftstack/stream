@@ -12,8 +12,8 @@ extension StreamWriter {
     public func withSubStreamWriter<Size: FixedWidthInteger>(
         sizedBy type: Size.Type,
         includingHeader: Bool = false,
-        task: (SubStreamWriter) async throws -> Void) async throws
-    {
+        task: (SubStreamWriter) async throws -> Void
+    ) async throws {
         let output = ByteArrayOutputStream()
         try await task(output)
         let sizeHeader = includingHeader

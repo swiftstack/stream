@@ -8,8 +8,8 @@ test("ByteArrayInputStream") {
 }
 
 test("ByteArrayInputStream advance position before callback") {
-    let input = ByteArrayInputStream([0,1,2,3,4,5,6,7,8,9])
-    try await input.readUntilEnd { bytes in
+    let input = ByteArrayInputStream([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    try await input.readUntilEnd { _ in
         expect(input.position == input.bytes.count)
     }
 }

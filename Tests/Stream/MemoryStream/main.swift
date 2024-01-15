@@ -101,7 +101,6 @@ test("Write") {
     _ = try stream.read(to: &buffer, byteCount: 4)
     expect(buffer == [1, 2, 3, 4])
 
-
     buffer = [UInt8](repeating: 0, count: 4)
     try stream.seek(to: 0, from: .begin)
 
@@ -133,7 +132,6 @@ test("Read") {
     expect(stream.position == 4)
     expect(stream.remain == 0)
     expect(stream.count == 4)
-
 
     buffer = [UInt8](repeating: 0, count: 4)
     try stream.seek(to: 0, from: .begin)

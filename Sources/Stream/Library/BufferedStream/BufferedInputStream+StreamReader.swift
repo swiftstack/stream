@@ -18,8 +18,8 @@ extension BufferedInputStream: StreamReader {
 
     public func peek<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) async throws -> T {
         if count > buffered {
             try ensure(count: count)
             guard try await feed() && buffered >= count else {
@@ -59,8 +59,8 @@ extension BufferedInputStream {
     @inlinable
     public func read<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) async throws -> T {
         if count > buffered {
             if count > allocated {
                 try ensure(count: count)
@@ -83,8 +83,8 @@ extension BufferedInputStream {
     public func read<T>(
         mode: PredicateMode,
         while predicate: (UInt8) -> Bool,
-        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) async throws -> T {
         var read = 0
         while true {
             if read == buffered {
@@ -157,8 +157,8 @@ extension BufferedInputStream {
     @inlinable
     public func consume(
         mode: PredicateMode,
-        while predicate: (UInt8) -> Bool) async throws
-    {
+        while predicate: (UInt8) -> Bool
+    ) async throws {
         while true {
             if buffered == 0 {
                 guard try await feed() else {

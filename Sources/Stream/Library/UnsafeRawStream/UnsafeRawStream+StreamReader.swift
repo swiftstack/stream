@@ -30,8 +30,8 @@ extension UnsafeRawInputStream: StreamReader {
 
     public func peek<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) throws -> T {
         try ensure(count: count)
         let slice = bytes[position..<position+count]
         return try body(UnsafeRawBufferPointer(rebasing: slice))
@@ -57,8 +57,8 @@ extension UnsafeRawInputStream: StreamReader {
 
     public func read<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) throws -> T {
         try ensure(count: count)
         let slice = self.bytes[position..<position+count]
         advance(by: count)
@@ -69,8 +69,8 @@ extension UnsafeRawInputStream: StreamReader {
     public func read<T>(
         mode: PredicateMode,
         while predicate: (UInt8) -> Bool,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) throws -> T {
         var read = 0
         while true {
             if read == buffered {
@@ -103,8 +103,8 @@ extension UnsafeRawInputStream: StreamReader {
 
     public func consume(
         mode: PredicateMode,
-        while predicate: (UInt8) -> Bool) throws
-    {
+        while predicate: (UInt8) -> Bool
+    ) throws {
         while true {
             if position == bytes.count {
                 if mode == .untilEnd { break }

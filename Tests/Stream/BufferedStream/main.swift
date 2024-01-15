@@ -12,7 +12,7 @@ extension BufferedStream {
 test("BufferedStream") {
     let stream = BufferedStream(baseStream: TestStream(), capacity: 10)
 
-    let result = try await stream.write(from: [0,1,2,3,4])
+    let result = try await stream.write(from: [0, 1, 2, 3, 4])
     expect(result == 5)
     expect(stream.outputStream.buffered == 5)
 
@@ -20,7 +20,7 @@ test("BufferedStream") {
     expect(stream.inputStream.buffered == 0)
     expect(try await stream.outputStream.flush() == ())
     expect(stream.outputStream.buffered == 0)
-    expect(try await stream.read(count: 5) == [0,1,2,3,4])
+    expect(try await stream.read(count: 5) == [0, 1, 2, 3, 4])
     expect(stream.inputStream.buffered == 0)
 }
 

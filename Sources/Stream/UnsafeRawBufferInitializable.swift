@@ -33,8 +33,8 @@ extension StreamReader {
     public func read<T: UnsafeRawBufferInitializable>(
         mode: PredicateMode,
         while predicate: (UInt8) -> Bool,
-        as type: T.Type) async throws -> T
-    {
+        as type: T.Type
+    ) async throws -> T {
         return try await read(mode: mode, while: predicate) { bytes in
             return T(bytes)
         }
