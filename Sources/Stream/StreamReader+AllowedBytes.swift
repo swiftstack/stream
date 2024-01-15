@@ -31,8 +31,8 @@ extension StreamReader {
     @inline(__always)
     public func read<T>(
         allowedBytes: AllowedBytes,
-        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) async throws -> T {
         let buffer = allowedBytes.buffer
         return try await read(
             mode: .untilEnd,

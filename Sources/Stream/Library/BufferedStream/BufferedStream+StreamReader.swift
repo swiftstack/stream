@@ -9,8 +9,8 @@ extension BufferedStream: StreamReader {
 
     public func peek<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) async throws -> T {
         return try await inputStream.peek(count: count, body: body)
     }
 
@@ -20,16 +20,16 @@ extension BufferedStream: StreamReader {
 
     public func read<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) async throws -> T {
         return try await inputStream.read(count: count, body: body)
     }
 
     public func read<T>(
         mode: PredicateMode,
         while predicate: (UInt8) -> Bool,
-        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) async throws -> T {
         return try await inputStream.read(
             mode: mode, while: predicate, body: body)
     }
@@ -44,8 +44,8 @@ extension BufferedStream: StreamReader {
 
     public func consume(
         mode: PredicateMode,
-        while predicate: (UInt8) -> Bool) async throws
-    {
+        while predicate: (UInt8) -> Bool
+    ) async throws {
         try await inputStream.consume(mode: mode, while: predicate)
     }
 }

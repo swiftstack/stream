@@ -91,8 +91,8 @@ public final class MemoryStream: Stream, Seekable {
 
     public func read(
         to buffer: UnsafeMutableRawPointer,
-        byteCount: Int) throws -> Int
-    {
+        byteCount: Int
+    ) throws -> Int {
         let bytes = read(byteCount)
         guard bytes.count > 0 else {
             return 0
@@ -103,8 +103,8 @@ public final class MemoryStream: Stream, Seekable {
 
     public func write(
         from buffer: UnsafeRawPointer,
-        byteCount: Int) throws -> Int
-    {
+        byteCount: Int
+    ) throws -> Int {
         guard byteCount > 0 else {
             return 0
         }

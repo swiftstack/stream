@@ -88,8 +88,8 @@ public class BufferedInputStream<BaseStream: InputStream> {
 extension BufferedInputStream: InputStream {
     public func read(
         to buffer: UnsafeMutableRawPointer,
-        byteCount: Int) async throws -> Int
-    {
+        byteCount: Int
+    ) async throws -> Int {
         switch buffered - byteCount {
 
         // we have buffered more than requested
@@ -134,8 +134,8 @@ extension BufferedInputStream: InputStream {
     @inline(__always)
     private func flush(
         to buffer: UnsafeMutableRawPointer,
-        byteCount: Int) -> Int
-    {
+        byteCount: Int
+    ) -> Int {
         assert(byteCount > buffered)
         buffer.copyMemory(from: readPosition, byteCount: buffered)
         let flushed = buffered

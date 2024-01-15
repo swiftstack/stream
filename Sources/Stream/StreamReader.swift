@@ -40,8 +40,8 @@ extension StreamReader {
     @inline(__always)
     public func read<T>(
         until byte: UInt8,
-        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) async throws -> T {
         return try await read(
             mode: .strict,
             while: { $0 != byte },
@@ -50,8 +50,8 @@ extension StreamReader {
 
     @inline(__always)
     public func readUntilEnd<T>(
-        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) async throws -> T {
         return try await read(
             mode: .untilEnd,
             while: { _ in true },
@@ -97,8 +97,8 @@ extension StreamReader {
     @inline(__always)
     public func read<T>(
         while predicate: (UInt8) -> Bool,
-        body: (UnsafeRawBufferPointer) throws -> T) async throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) async throws -> T {
         return try await read(mode: .untilEnd, while: predicate, body: body)
     }
 
@@ -123,8 +123,8 @@ extension StreamReader {
     @inlinable
     public func read(
         mode: PredicateMode = .untilEnd,
-        while predicate: (UInt8) -> Bool) async throws -> [UInt8]
-    {
+        while predicate: (UInt8) -> Bool
+    ) async throws -> [UInt8] {
         return try await read(mode: mode, while: predicate, body: [UInt8].init)
     }
 }

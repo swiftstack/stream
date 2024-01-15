@@ -22,8 +22,8 @@ extension ByteArrayInputStream: StreamReader {
 
     public func peek<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) throws -> T {
         try ensure(count: count)
         return try bytes[position..<position+count].withUnsafeBytes(body)
     }
@@ -49,8 +49,8 @@ extension ByteArrayInputStream: StreamReader {
 
     public func read<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) throws -> T {
         try ensure(count: count)
         let slice = bytes[position..<position+count]
         advance(by: count)
@@ -62,8 +62,8 @@ extension ByteArrayInputStream: StreamReader {
     public func read<T>(
         mode: PredicateMode,
         while predicate: (UInt8) -> Bool,
-        body: (UnsafeRawBufferPointer) throws -> T) throws -> T
-    {
+        body: (UnsafeRawBufferPointer) throws -> T
+    ) throws -> T {
         var read = 0
         while true {
             if read == buffered {
@@ -98,8 +98,8 @@ extension ByteArrayInputStream: StreamReader {
 
     public func consume(
         mode: PredicateMode,
-        while predicate: (UInt8) -> Bool) throws
-    {
+        while predicate: (UInt8) -> Bool
+    ) throws {
         while true {
             if position == bytes.count {
                 if mode == .untilEnd { break }

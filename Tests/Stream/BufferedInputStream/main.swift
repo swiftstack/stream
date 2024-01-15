@@ -28,22 +28,22 @@ test("BufferedInputStream") {
         return buffer
     }
 
-    expect(try await read(count: 5) == [0,1,2,3,4])
+    expect(try await read(count: 5) == [0, 1, 2, 3, 4])
     expect(stream.buffered == 5)
-    expect(try await read(count: 2) == [5,6])
+    expect(try await read(count: 2) == [5, 6])
     expect(stream.buffered == 3)
-    expect(try await read(count: 13) == [7,8,9,0,1,2,3,4,5,6,7,8,9])
+    expect(try await read(count: 13) == [7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     expect(stream.buffered == 0)
 
-    expect(try await read(count: 10) == [0,1,2,3,4,5,6,7,8,9])
+    expect(try await read(count: 10) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
     expect(stream.buffered == 0)
 
-    expect(try await read(count: 13) == [0,1,2,3,4,5,6,7,8,9,10,11,12])
+    expect(try await read(count: 12) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
     expect(stream.buffered == 0)
 
-    expect(try await read(count: 9) == [0,1,2,3,4,5,6,7,8])
+    expect(try await read(count: 9) == [0, 1, 2, 3, 4, 5, 6, 7, 8])
     expect(stream.buffered == 1)
-    expect(try await read(count: 13) == [9,0,1,2,3,4,5,6,7,8,9,10,11])
+    expect(try await read(count: 12) == [9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     expect(stream.buffered == 0)
     // test if stream resets if drained
     stream.clear()

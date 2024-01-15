@@ -30,8 +30,8 @@ public class BufferedOutputStream<BaseStream: OutputStream> {
 extension BufferedOutputStream: OutputStream {
     public func write(
         from buffer: UnsafeRawPointer,
-        byteCount: Int) async throws -> Int
-    {
+        byteCount: Int
+    ) async throws -> Int {
         switch available - byteCount {
         // the bytes fit into the buffer
         case 0...:
