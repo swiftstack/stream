@@ -33,29 +33,35 @@ let swift6: [SwiftSetting] = [
 
 // MARK: - tests
 
-addTestSuite(name: "Stream/BufferedInputStream")
-addTestSuite(name: "Stream/BufferedOutputStream")
-addTestSuite(name: "Stream/BufferedStream")
-addTestSuite(name: "Stream/BufferedStreamReader")
-addTestSuite(name: "Stream/BufferedStreamWriter")
-addTestSuite(name: "Stream/ByteArrayInputStream")
-addTestSuite(name: "Stream/ByteArrayOutputStream")
-addTestSuite(name: "Stream/MemoryStream")
-addTestSuite(name: "Stream/Numeric")
-addTestSuite(name: "Stream/Stream")
-addTestSuite(name: "Stream/StreamReader")
-addTestSuite(name: "Stream/SubStreamReader")
-addTestSuite(name: "Stream/SubStreamWriter")
+testTarget("Stream") { test in
+    test("BufferedInputStream")
+    test("BufferedOutputStream")
+    test("BufferedStream")
+    test("BufferedStreamReader")
+    test("BufferedStreamWriter")
+    test("ByteArrayInputStream")
+    test("ByteArrayOutputStream")
+    test("MemoryStream")
+    test("Numeric")
+    test("Stream")
+    test("StreamReader")
+    test("SubStreamReader")
+    test("SubStreamWriter")
+}
 
-func addTestSuite(name: String) {
+func testTarget(_ target: String, task: ((String) -> Void) -> Void) {
+    task { test in addTest(target: target, name: test) }
+}
+
+func addTest(target: String, name: String) {
     package.targets.append(
         .executableTarget(
-            name: "Tests/" + name,
+            name: "Tests/\(target)/\(name)",
             dependencies: [
                 .target(name: "Stream"),
                 .product(name: "Test", package: "test"),
             ],
-            path: "Tests/" + name,
+            path: "Tests/\(target)/\(name)",
             swiftSettings: swift6))
 }
 
