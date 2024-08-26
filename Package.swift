@@ -1,4 +1,4 @@
-// swift-tools-version:5.9
+// swift-tools-version:6.0
 import PackageDescription
 
 let package = Package(
@@ -12,32 +12,16 @@ let package = Package(
             name: "Stream",
             targets: ["Stream"]),
     ],
-    dependencies: [
-        .package(
-            url: "https://github.com/apple/swift-testing.git",
-            from: "0.12.0"),
-    ],
     targets: [
         .target(
-            name: "Stream",
-            swiftSettings: swift6),
+            name: "Stream"),
         .testTarget(
             name: "Tests",
             dependencies: [
                 .target(name: "Stream"),
-                .product(name: "Testing", package: "swift-testing"),
             ]),
     ]
 )
-
-let swift6: [SwiftSetting] = [
-    .enableUpcomingFeature("ConciseMagicFile"),
-    .enableUpcomingFeature("ForwardTrailingClosures"),
-    .enableUpcomingFeature("ExistentialAny"),
-    .enableUpcomingFeature("StrictConcurrency"),
-    .enableUpcomingFeature("ImplicitOpenExistentials"),
-    .enableUpcomingFeature("BareSlashRegexLiterals"),
-]
 
 // MARK: - custom package source
 

@@ -1,4 +1,4 @@
-public final class AllowedBytes {
+public final class AllowedBytes: @unchecked Sendable {
     @usableFromInline
     let buffer: UnsafeBufferPointer<Bool>
 
