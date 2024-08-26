@@ -2,7 +2,7 @@ extension StreamReader {
     public func parse(_ type: Int.Type) async throws -> Int? {
         let isNegative = try await consume(.hyphen)
 
-        let result = try await read(while: { $0 >= .zero && $0 <= .nine }) {
+        let result = try await read(while: isDigit) {
             return Int($0)
         }
         guard let integer = result else {
@@ -15,18 +15,22 @@ extension StreamReader {
     public func parse(_ type: Double.Type) async throws -> Double? {
         var bytes = [UInt8]()
 
-        try await read(while: { $0 >= .zero && $0 <= .nine }) {
+        try await read(while: isDigit) {
             bytes.append(contentsOf: $0)
         }
 
         if let result = try? await consume(.dot), result == true {
             bytes.append(.dot)
-            try await read(while: { $0 >= .zero && $0 <= .nine }) {
+            try await read(while: isDigit) {
                 bytes.append(contentsOf: $0)
             }
         }
 
         return Double(String(bytes))
+    }
+
+    private func isDigit(_ byte: UInt8) -> Bool {
+        byte >= .zero && byte <= .nine
     }
 }
 
