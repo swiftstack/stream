@@ -1,18 +1,20 @@
-import Test
+import Testing
 @testable import Stream
 
-test("LimitedBy") {
+@Test("SubStreamReader withSubStreamReader(limitedBy:)")
+func limitedBy() async throws {
     let stream = ByteArrayInputStream("Hello, World!") as any StreamReader
     let hello = try await stream.withSubStreamReader(limitedBy: 5) { stream in
         return try await stream.readUntilEnd(as: String.self)
     }
     try await stream.consume(count: 2)
     let world = try await stream.readUntilEnd(as: String.self)
-    expect(hello == "Hello")
-    expect(world == "World!")
+    #expect(hello == "Hello")
+    #expect(world == "World!")
 }
 
-test("SizedBy") {
+@Test("SubStreamReader withSubStreamReader(sizedBy:)")
+func readerSizedBy() async throws {
     let bytes = [0x00, 0x05] + [UInt8]("Hello, World!".utf8)
     let stream = ByteArrayInputStream(bytes) as any StreamReader
     let hello = try await stream.withSubStreamReader(sizedBy: UInt16.self) {
@@ -20,11 +22,12 @@ test("SizedBy") {
     }
     try await stream.consume(count: 2)
     let world = try await stream.readUntilEnd(as: String.self)
-    expect(hello == "Hello")
-    expect(world == "World!")
+    #expect(hello == "Hello")
+    #expect(world == "World!")
 }
 
-test("SizedByIncludingHeader") {
+@Test("SubStreamReader withSubStreamReader(sizedBy:includingHeader:)")
+func sizedByIncludingHeader() async throws {
     let bytes = [0x00, 0x07] + [UInt8]("Hello, World!".utf8)
     let stream = ByteArrayInputStream(bytes) as any StreamReader
     let hello = try await  stream.withSubStreamReader(
@@ -35,8 +38,6 @@ test("SizedByIncludingHeader") {
     }
     try await stream.consume(count: 2)
     let world = try await stream.readUntilEnd(as: String.self)
-    expect(hello == "Hello")
-    expect(world == "World!")
+    #expect(hello == "Hello")
+    #expect(world == "World!")
 }
-
-await run()

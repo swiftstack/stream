@@ -13,12 +13,20 @@ let package = Package(
             targets: ["Stream"]),
     ],
     dependencies: [
-        .package(name: "Test"),
+        .package(
+            url: "https://github.com/apple/swift-testing.git",
+            from: "0.12.0"),
     ],
     targets: [
         .target(
             name: "Stream",
             swiftSettings: swift6),
+        .testTarget(
+            name: "Tests",
+            dependencies: [
+                .target(name: "Stream"),
+                .product(name: "Testing", package: "swift-testing"),
+            ]),
     ]
 )
 
@@ -30,40 +38,6 @@ let swift6: [SwiftSetting] = [
     .enableUpcomingFeature("ImplicitOpenExistentials"),
     .enableUpcomingFeature("BareSlashRegexLiterals"),
 ]
-
-// MARK: - tests
-
-testTarget("Stream") { test in
-    test("BufferedInputStream")
-    test("BufferedOutputStream")
-    test("BufferedStream")
-    test("BufferedStreamReader")
-    test("BufferedStreamWriter")
-    test("ByteArrayInputStream")
-    test("ByteArrayOutputStream")
-    test("MemoryStream")
-    test("Numeric")
-    test("Stream")
-    test("StreamReader")
-    test("SubStreamReader")
-    test("SubStreamWriter")
-}
-
-func testTarget(_ target: String, task: ((String) -> Void) -> Void) {
-    task { test in addTest(target: target, name: test) }
-}
-
-func addTest(target: String, name: String) {
-    package.targets.append(
-        .executableTarget(
-            name: "Tests/\(target)/\(name)",
-            dependencies: [
-                .target(name: "Stream"),
-                .product(name: "Test", package: "test"),
-            ],
-            path: "Tests/\(target)/\(name)",
-            swiftSettings: swift6))
-}
 
 // MARK: - custom package source
 
