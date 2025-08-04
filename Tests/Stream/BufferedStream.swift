@@ -5,7 +5,7 @@ import Testing
 func bufferedStream() async throws {
     let stream = BufferedStream(baseStream: TestStream(), capacity: 10)
 
-    let result = try await stream.write(from: [0, 1, 2, 3, 4])
+    let result = try await stream.write(from: [0, 1, 2, 3, 4], byteCount: 5)
     #expect(result == 5)
     #expect(stream.outputStream.buffered == 5)
 

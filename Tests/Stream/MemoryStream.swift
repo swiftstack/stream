@@ -51,7 +51,7 @@ func memoryStreamSeek() async throws {
     #expect(stream.remain == 0)
     #expect(stream.count == 0)
 
-    _ = try await stream.write(from: [1, 2, 3, 4])
+    _ = try stream.write(from: [1, 2, 3, 4], byteCount: 4)
     #expect(stream.position == 4)
     #expect(stream.remain == 0)
     #expect(stream.count == 4)
@@ -119,8 +119,7 @@ func memoryStreamWrite() async throws {
     #expect(buffer == [1, 2, 0, 0])
 
     try stream.seek(to: 0, from: .end)
-    // FIXME [Concurrency] override async extensions
-    let writtenLast = try await stream.write(from: data.suffix(from: 2))
+    let writtenLast = try stream.write(from: [UInt8](data[2...]), byteCount: 2)
     #expect(writtenLast == 2)
     try stream.seek(to: -2, from: .end)
     _ = try stream.read(to: &buffer[2], byteCount: 2)
@@ -255,7 +254,6 @@ func memoryStreamBuffer() async throws {
     #expect([1, 2, 3, 4] == [UInt8](stream.buffer))
 
     var buffer = [UInt8](repeating: 0, count: 1)
-    // FIXME [Concurrency] override async extensions
-    _ = try await stream.read(to: &buffer)
+    _ = try stream.read(to: &buffer, byteCount: 4)
     #expect([1, 2, 3, 4] == [UInt8](stream.buffer))
 }

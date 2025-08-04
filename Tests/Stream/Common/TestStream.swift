@@ -1,24 +1,24 @@
 import Stream
 
 class TestStream: Stream {
-    var storage = [UInt8]()
+    var bytes = [UInt8]()
 
     func read(
         to buffer: UnsafeMutableRawPointer,
         byteCount: Int
-    ) throws -> Int {
-        let count = min(storage.count, byteCount)
-        buffer.copyMemory(from: storage, byteCount: count)
-        storage.removeFirst(count)
+    ) -> Int {
+        let count = min(bytes.count, byteCount)
+        buffer.copyMemory(from: bytes, byteCount: count)
+        bytes.removeFirst(count)
         return count
     }
 
     func write(
         from buffer: UnsafeRawPointer,
         byteCount: Int
-    ) throws -> Int {
+    ) -> Int {
         let buffer = UnsafeRawBufferPointer(start: buffer, count: byteCount)
-        storage.append(contentsOf: buffer)
+        bytes.append(contentsOf: buffer)
         return byteCount
     }
 }
