@@ -17,6 +17,7 @@ public extension UInt8 {
     static let asterisk = UInt8(ascii: "*")
     static let percent = UInt8(ascii: "%")
     static let hyphen = UInt8(ascii: "-")
+    static let plus = UInt8(ascii: "+")
     static let equal = UInt8(ascii: "=")
     static let slash = UInt8(ascii: "/")
     static let hash = UInt8(ascii: "#")
