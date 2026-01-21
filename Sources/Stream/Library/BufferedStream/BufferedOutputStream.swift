@@ -11,9 +11,8 @@ public class BufferedOutputStream<BaseStream: OutputStream> {
     }
 
     public init(baseStream: BaseStream, capacity: Int = 256) {
-        guard capacity > 0 else {
-            fatalError("capacity must be > 0")
-        }
+        precondition(capacity > 0, "capacity must be > 0")
+
         self.baseStream = baseStream
         self.storage = UnsafeMutableRawPointer.allocate(
             byteCount: capacity,

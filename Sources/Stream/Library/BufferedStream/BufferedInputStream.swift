@@ -41,9 +41,8 @@ public class BufferedInputStream<BaseStream: InputStream> {
         capacity: Int = 256,
         expandable: Bool = true
     ) {
-        guard capacity > 0 else {
-            fatalError("capacity must be > 0")
-        }
+        precondition(capacity > 0, "capacity must be > 0")
+
         self.baseStream = baseStream
         self.storage = UnsafeMutableRawPointer.allocate(
             byteCount: capacity,
