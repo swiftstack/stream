@@ -50,7 +50,7 @@ extension Int {
 
 extension String {
     fileprivate init(_ bytes: [UInt8]) {
-        if #available(macOS 11.0, iOS 14.0, *) {
+        if #available(macOS 11.0, iOS 14.0, watchOS 7.0, tvOS 14.0, *) {
             self = String(unsafeUninitializedCapacity: bytes.count) {
                 _ = $0.initialize(from: bytes)
                 return bytes.count
