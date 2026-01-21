@@ -19,6 +19,3 @@ public class ByteArrayOutputStream: OutputStream {
         return byteCount
     }
 }
-
-@available(*, renamed: "ByteArrayOutputStream")
-public typealias OutputByteStream = ByteArrayOutputStream

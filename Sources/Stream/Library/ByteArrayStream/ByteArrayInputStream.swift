@@ -23,6 +23,3 @@ public class ByteArrayInputStream: InputStream {
         return count
     }
 }
-
-@available(*, renamed: "ByteArrayInputStream")
-public typealias InputByteStream = ByteArrayInputStream
