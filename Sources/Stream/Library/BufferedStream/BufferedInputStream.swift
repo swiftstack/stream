@@ -143,3 +143,36 @@ extension BufferedInputStream: InputStream {
         return flushed
     }
 }
+
+extension BufferedInputStream: Seekable where BaseStream: Seekable {
+    public func seek(to offset: Int, from origin: SeekOrigin) async throws {
+        switch origin {
+        case .current where offset == 0:
+            return
+        case .current where offset > 0 && buffered > offset:
+            try await consume(count: offset)
+        default:
+            clear()
+            try await baseStream.seek(to: offset, from: origin)
+        }
+    }
+}
+
+extension BufferedOutputStream: Seekable where BaseStream: Seekable {
+    public func seek(to offset: Int, from origin: SeekOrigin) async throws {
+        switch origin {
+        case .current where offset == 0:
+            return
+        default:
+            try await flush()
+            try await baseStream.seek(to: offset, from: origin)
+        }
+    }
+}
+
+extension BufferedStream: Seekable where BaseStream: Seekable {
+    public func seek(to offset: Int, from origin: SeekOrigin) async throws {
+        try await inputStream.seek(to: offset, from: origin)
+        try await outputStream.seek(to: offset, from: origin)
+    }
+}
