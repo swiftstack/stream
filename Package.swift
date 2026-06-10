@@ -21,6 +21,9 @@ let package = Package(
             name: "Stream",
             dependencies: [
                 .product(name: "ASCII", package: "ASCII"),
+            ],
+            swiftSettings: [
+                .treatWarning("EmbeddedRestrictions", as: .error)
             ]),
         .testTarget(
             name: "Tests",
