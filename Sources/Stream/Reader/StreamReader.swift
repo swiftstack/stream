@@ -1,3 +1,5 @@
+import ASCII
+
 public enum PredicateMode {
     case strict
     case untilEnd

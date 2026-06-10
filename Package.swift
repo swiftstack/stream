@@ -12,9 +12,16 @@ let package = Package(
             name: "Stream",
             targets: ["Stream"]),
     ],
+    dependencies: [
+        .package(
+            name: "ASCII"),
+    ],
     targets: [
         .target(
-            name: "Stream"),
+            name: "Stream",
+            dependencies: [
+                .product(name: "ASCII", package: "ASCII"),
+            ]),
         .testTarget(
             name: "Tests",
             dependencies: [

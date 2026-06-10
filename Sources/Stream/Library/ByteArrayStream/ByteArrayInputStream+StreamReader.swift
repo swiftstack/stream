@@ -1,3 +1,5 @@
+import ASCII
+
 extension ByteArrayInputStream: StreamReader {
     public var buffered: Int {
         return bytes.count - position

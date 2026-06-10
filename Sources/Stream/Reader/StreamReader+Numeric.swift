@@ -1,6 +1,6 @@
 extension StreamReader {
     public func parse(_ type: Int.Type) async throws(StreamError) -> Int? {
-        let isNegative = try await consume(.hyphen)
+        let isNegative = try await consume(.hyphenMinus)
 
         let result = try await read(while: isDigit) {
             return Int($0)
@@ -19,8 +19,8 @@ extension StreamReader {
             bytes.append(contentsOf: $0)
         }
 
-        if let result = try? await consume(.dot), result == true {
-            bytes.append(.dot)
+        if let result = try? await consume(.period), result == true {
+            bytes.append(.period)
             try await read(while: isDigit) {
                 bytes.append(contentsOf: $0)
             }
