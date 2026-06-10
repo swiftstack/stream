@@ -1,5 +1,5 @@
 extension StreamReader {
-    public func parse(_ type: Int.Type) async throws -> Int? {
+    public func parse(_ type: Int.Type) async throws(StreamError) -> Int? {
         let isNegative = try await consume(.hyphen)
 
         let result = try await read(while: isDigit) {
@@ -12,7 +12,7 @@ extension StreamReader {
         return isNegative ? -integer : integer
     }
 
-    public func parse(_ type: Double.Type) async throws -> Double? {
+    public func parse(_ type: Double.Type) async throws(StreamError) -> Double? {
         var bytes = [UInt8]()
 
         try await read(while: isDigit) {

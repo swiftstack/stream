@@ -1,5 +1,5 @@
 extension BufferedInputStream: StreamReader {
-    public func cache(count: Int) async throws -> Bool {
+    public func cache(count: Int) async throws(StreamError) -> Bool {
         if count > buffered {
             try ensure(count: count)
             guard try await feed() && buffered >= count else {
@@ -9,7 +9,7 @@ extension BufferedInputStream: StreamReader {
         return true
     }
 
-    public func peek() async throws -> UInt8 {
+    public func peek() async throws(StreamError) -> UInt8 {
         guard try await cache(count: 1) else {
             throw StreamError.insufficientData
         }
@@ -18,8 +18,8 @@ extension BufferedInputStream: StreamReader {
 
     public func peek<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) async throws -> T {
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) async throws(StreamError) -> T {
         if count > buffered {
             try ensure(count: count)
             guard try await feed() && buffered >= count else {
@@ -34,7 +34,7 @@ extension BufferedInputStream: StreamReader {
 extension BufferedInputStream {
     // optimized version of read<T: FixedWidthInteger>()
     @inlinable // TODO: benchmark @inlinable
-    public func read(_ type: UInt8.Type) async throws -> UInt8 {
+    public func read(_ type: UInt8.Type) async throws(StreamError) -> UInt8 {
         if buffered == 0 {
             guard try await feed() else {
                 throw StreamError.insufficientData
@@ -46,7 +46,7 @@ extension BufferedInputStream {
     }
 
     @inlinable
-    public func read<T: FixedWidthInteger>(_ type: T.Type) async throws -> T {
+    public func read<T: FixedWidthInteger>(_ type: T.Type) async throws(StreamError) -> T {
         return try await read(count: MemoryLayout<T>.size) { bytes in
             var result: T = 0
             withUnsafeMutableBytes(of: &result) { pointer in
@@ -59,8 +59,8 @@ extension BufferedInputStream {
     @inlinable
     public func read<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) async throws -> T {
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) async throws(StreamError) -> T {
         if count > buffered {
             if count > allocated {
                 try ensure(count: count)
@@ -83,8 +83,8 @@ extension BufferedInputStream {
     public func read<T>(
         mode: PredicateMode,
         while predicate: (UInt8) -> Bool,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) async throws -> T {
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) async throws(StreamError) -> T {
         var read = 0
         while true {
             if read == buffered {
@@ -111,7 +111,7 @@ extension BufferedInputStream {
 }
 
 extension BufferedInputStream {
-    public func consume(count: Int) async throws {
+    public func consume(count: Int) async throws(StreamError) {
         guard buffered < count else {
             advanceReadPosition(by: count)
             return
@@ -136,7 +136,7 @@ extension BufferedInputStream {
         advanceReadPosition(by: -rest)
     }
 
-    public func consume(_ byte: UInt8) async throws -> Bool {
+    public func consume(_ byte: UInt8) async throws(StreamError) -> Bool {
         if buffered == 0 {
             guard try await feed() else {
                 throw StreamError.insufficientData
@@ -158,7 +158,7 @@ extension BufferedInputStream {
     public func consume(
         mode: PredicateMode,
         while predicate: (UInt8) -> Bool
-    ) async throws {
+    ) async throws(StreamError) {
         while true {
             if buffered == 0 {
                 guard try await feed() else {
@@ -177,7 +177,7 @@ extension BufferedInputStream {
 
 extension BufferedInputStream {
     @usableFromInline
-    func feed() async throws -> Bool {
+    func feed() async throws(StreamError) -> Bool {
         guard used < allocated else {
             throw StreamError.notEnoughSpace
         }
@@ -192,7 +192,7 @@ extension BufferedInputStream {
     }
 
     @usableFromInline
-    func ensure(count requested: Int) throws {
+    func ensure(count requested: Int) throws(StreamError) {
         guard used + requested > allocated else {
             return
         }

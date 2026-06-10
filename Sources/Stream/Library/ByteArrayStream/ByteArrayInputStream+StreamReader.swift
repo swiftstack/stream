@@ -4,7 +4,7 @@ extension ByteArrayInputStream: StreamReader {
     }
 
     @inline(__always)
-    func ensure(count: Int) throws {
+    func ensure(count: Int) throws(StreamError) {
         guard buffered >= count else {
             throw StreamError.insufficientData
         }
@@ -15,26 +15,31 @@ extension ByteArrayInputStream: StreamReader {
         position += count
     }
 
-    public func peek() throws -> UInt8 {
+    public func peek() throws(StreamError) -> UInt8 {
         try ensure(count: 1)
         return bytes[position]
     }
 
     public func peek<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) throws -> T {
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) throws(StreamError) -> T {
         try ensure(count: count)
-        return try bytes[position..<position+count].withUnsafeBytes(body)
+        // FIXME: Thrown expression type 'any Error' cannot be converted to error type 'StreamError'
+        do {
+            return try bytes[position..<position+count].withUnsafeBytes(body)
+        } catch {
+            throw error as! StreamError
+        }
     }
 
-    public func read(_ type: UInt8.Type) throws -> UInt8 {
+    public func read(_ type: UInt8.Type) throws(StreamError) -> UInt8 {
         try ensure(count: 1)
         advance(by: 1)
         return bytes[position-1]
     }
 
-    public func read<T: FixedWidthInteger>(_ type: T.Type) throws -> T {
+    public func read<T: FixedWidthInteger>(_ type: T.Type) throws(StreamError) -> T {
         let count = MemoryLayout<T>.size
         try ensure(count: count)
         var result: T = 0
@@ -49,21 +54,24 @@ extension ByteArrayInputStream: StreamReader {
 
     public func read<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) throws -> T {
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) throws(StreamError) -> T {
         try ensure(count: count)
         let slice = bytes[position..<position+count]
         advance(by: count)
-        return try slice.withUnsafeBytes { bytes in
-            return try body(bytes)
+        // FIXME: Thrown expression type 'any Error' cannot be converted to error type 'StreamError'
+        do {
+            return try slice.withUnsafeBytes(body)
+        } catch {
+            throw error as! StreamError
         }
     }
 
     public func read<T>(
         mode: PredicateMode,
         while predicate: (UInt8) -> Bool,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) throws -> T {
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) throws(StreamError) -> T {
         var read = 0
         while true {
             if read == buffered {
@@ -77,17 +85,20 @@ extension ByteArrayInputStream: StreamReader {
         }
         let slice = bytes[position..<(position+read)]
         advance(by: read)
-        return try slice.withUnsafeBytes { bytes in
-            return try body(bytes)
+        // FIXME: Thrown expression type 'any Error' cannot be converted to error type 'StreamError'
+        do {
+            return try slice.withUnsafeBytes(body)
+        } catch {
+            throw error as! StreamError
         }
     }
 
-    public func consume(count: Int) throws {
+    public func consume(count: Int) throws(StreamError) {
         try ensure(count: count)
         advance(by: count)
     }
 
-    public func consume(_ byte: UInt8) throws -> Bool {
+    public func consume(_ byte: UInt8) throws(StreamError) -> Bool {
         try ensure(count: 1)
         guard bytes[position] == byte else {
             return false
@@ -99,7 +110,7 @@ extension ByteArrayInputStream: StreamReader {
     public func consume(
         mode: PredicateMode,
         while predicate: (UInt8) -> Bool
-    ) throws {
+    ) throws(StreamError) {
         while true {
             if position == bytes.count {
                 if mode == .untilEnd { break }
@@ -112,7 +123,7 @@ extension ByteArrayInputStream: StreamReader {
         }
     }
 
-    public func cache(count: Int) throws -> Bool {
+    public func cache(count: Int) throws(StreamError) -> Bool {
         do {
             try ensure(count: count)
             return true
@@ -126,8 +137,8 @@ extension ByteArrayInputStream {
     @inline(__always)
     public func read<T>(
         until byte: UInt8,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) throws -> T {
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) throws(StreamError) -> T {
         return try read(
             mode: .strict,
             while: { $0 != byte },
@@ -136,20 +147,20 @@ extension ByteArrayInputStream {
 
     @inline(__always)
     public func readUntilEnd<T>(
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) throws -> T {
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) throws(StreamError) -> T {
         return try read(
             mode: .untilEnd,
             while: { _ in true },
             body: body)
     }
 
-    public func consume(until byte: UInt8) throws {
+    public func consume(until byte: UInt8) throws(StreamError) {
         try consume(mode: .strict, while: { $0 != byte })
     }
 
     @inlinable
-    public func consume<T>(sequence bytes: T) throws -> Bool
+    public func consume<T>(sequence bytes: T) throws(StreamError) -> Bool
     where T: Collection, T.Element == UInt8
     {
         guard try cache(count: bytes.count) else {
@@ -163,12 +174,12 @@ extension ByteArrayInputStream {
     }
 
     @inlinable
-    public func consume(set: Set<UInt8>) throws {
+    public func consume(set: Set<UInt8>) throws(StreamError) {
         try consume(while: set.contains)
     }
 
     @inlinable
-    public func next<T: Collection>(is elements: T) throws -> Bool
+    public func next<T: Collection>(is elements: T) throws(StreamError) -> Bool
     where T.Element == UInt8
     {
         return try peek(count: elements.count) { bytes in
@@ -183,13 +194,13 @@ extension ByteArrayInputStream {
     @inline(__always)
     public func read<T>(
         while predicate: (UInt8) -> Bool,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) throws -> T {
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) throws(StreamError) -> T {
         return try read(mode: .untilEnd, while: predicate, body: body)
     }
 
     @inline(__always)
-    public func consume(while predicate: (UInt8) -> Bool) throws {
+    public func consume(while predicate: (UInt8) -> Bool) throws(StreamError) {
         try consume(mode: .untilEnd, while: predicate)
     }
 }
@@ -197,12 +208,12 @@ extension ByteArrayInputStream {
 // MARK: [UInt8]
 
 extension ByteArrayInputStream {
-    public func read(until byte: UInt8) throws -> [UInt8] {
+    public func read(until byte: UInt8) throws(StreamError) -> [UInt8] {
         return try read(until: byte, body: [UInt8].init)
     }
 
     @inlinable
-    public func read(count: Int) throws -> [UInt8] {
+    public func read(count: Int) throws(StreamError) -> [UInt8] {
         return try read(count: count, body: [UInt8].init)
     }
 
@@ -210,7 +221,7 @@ extension ByteArrayInputStream {
     public func read(
         mode: PredicateMode = .untilEnd,
         while predicate: (UInt8) -> Bool
-    ) throws -> [UInt8] {
+    ) throws(StreamError) -> [UInt8] {
         return try read(mode: mode, while: predicate, body: [UInt8].init)
     }
 }
@@ -219,14 +230,14 @@ extension ByteArrayInputStream {
 
 extension ByteArrayInputStream {
     @usableFromInline
-    func consumeLineEnd() throws {
+    func consumeLineEnd() throws(StreamError) {
         _ = try? consume(.cr)
         _ = try consume(.lf)
     }
 
     @inlinable
     public func readLine<T>(
-        body: (UnsafeRawBufferPointer) throws -> T
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
     ) -> T? {
         do {
             let result: T = try read(
@@ -242,12 +253,12 @@ extension ByteArrayInputStream {
     }
 
     @inlinable
-    public func readLine() throws -> String? {
+    public func readLine() throws(StreamError) -> String? {
         return try readLine(as: UTF8.self)
     }
 
     @inlinable
-    public func readLine<T>(as encoding: T.Type) throws -> String?
+    public func readLine<T>(as encoding: T.Type) throws(StreamError) -> String?
     where T: Unicode.Encoding
     {
         return readLine { bytes in

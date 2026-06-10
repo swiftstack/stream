@@ -1,11 +1,3 @@
-extension MemoryStream {
-    public enum Error: Swift.Error {
-        case notEnoughSpace
-        case insufficientData
-        case invalidSeekOffset
-    }
-}
-
 public final class MemoryStream: Stream, Seekable {
     var storage: UnsafeMutableRawPointer
     var allocated: Int
@@ -58,7 +50,7 @@ public final class MemoryStream: Stream, Seekable {
         storage.deallocate()
     }
 
-    public func seek(to offset: Int, from origin: SeekOrigin) throws {
+    public func seek(to offset: Int, from origin: SeekOrigin) throws(StreamError) {
         var position: Int
 
         switch origin {
@@ -69,20 +61,21 @@ public final class MemoryStream: Stream, Seekable {
 
         switch position {
         case 0...endIndex: self.position = position
-        default: throw Error.invalidSeekOffset
+        default: throw StreamError.invalidSeekOffset
         }
     }
 
     public func read(_ maxLength: Int) -> UnsafeRawBufferPointer {
-        return try! read(upTo: Swift.min(remain, maxLength))
-    }
-
-    public func read(upTo count: Int) throws -> UnsafeRawBufferPointer {
-        guard allocated > 0 else {
+        do {
+            return try read(upTo: Swift.min(remain, maxLength))
+        } catch {
             return UnsafeRawBufferPointer(start: nil, count: 0)
         }
-        guard remain >= count else {
-            throw Error.insufficientData
+    }
+
+    public func read(upTo count: Int) throws(StreamError) -> UnsafeRawBufferPointer {
+        guard allocated > 0, remain >= count else {
+            throw StreamError.insufficientData
         }
         let start = storage.advanced(by: position)
         position += count
@@ -92,7 +85,7 @@ public final class MemoryStream: Stream, Seekable {
     public func read(
         to buffer: UnsafeMutableRawPointer,
         byteCount: Int
-    ) throws -> Int {
+    ) throws(StreamError) -> Int {
         let bytes = read(byteCount)
         guard bytes.count > 0 else {
             return 0
@@ -104,7 +97,7 @@ public final class MemoryStream: Stream, Seekable {
     public func write(
         from buffer: UnsafeRawPointer,
         byteCount: Int
-    ) throws -> Int {
+    ) throws(StreamError) -> Int {
         guard byteCount > 0 else {
             return 0
         }
@@ -132,10 +125,10 @@ public final class MemoryStream: Stream, Seekable {
         self.allocated = byteCount
     }
 
-    fileprivate func ensure(capacity count: Int) throws {
+    fileprivate func ensure(capacity count: Int) throws(StreamError) {
         if _slowPath(count > allocated) {
             guard expandable else {
-                throw Error.notEnoughSpace
+                throw StreamError.notEnoughSpace
             }
             var size = 256
             while count > size {
@@ -147,14 +140,19 @@ public final class MemoryStream: Stream, Seekable {
 }
 
 extension MemoryStream {
-    public func write<T: FixedWidthInteger>(_ value: T) throws {
+    public func write<T: FixedWidthInteger>(_ value: T) throws(StreamError) {
         var value = value.bigEndian
-        try withUnsafePointer(to: &value) { pointer in
-            _ = try write(from: pointer, byteCount: MemoryLayout<T>.size)
+        // FIXME: Thrown expression type 'any Error' cannot be converted to error type 'StreamError'
+        do {
+            try withUnsafePointer(to: &value) { pointer in
+                _ = try write(from: pointer, byteCount: MemoryLayout<T>.size)
+            }
+        } catch {
+            throw error as! StreamError
         }
     }
 
-    public func read<T: FixedWidthInteger>(_ type: T.Type) throws -> T {
+    public func read<T: FixedWidthInteger>(_ type: T.Type) throws(StreamError) -> T {
         let buffer = try read(upTo: MemoryLayout<T>.size)
         let value = buffer.baseAddress!.assumingMemoryBound(to: T.self).pointee
         return value.bigEndian

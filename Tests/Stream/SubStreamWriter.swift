@@ -6,7 +6,8 @@ import Testing
 func writerSizedBy() async throws {
     let stream = ByteArrayOutputStream()
     try await stream.withSubStreamWriter(sizedBy: UInt16.self) { stream in
-        return try await stream.write("Hello, World!")
+        // FIXME: Thrown expression type 'any Error' cannot be converted to error type 'StreamError'
+        return try! await stream.write("Hello, World!")
     }
     #expect(stream.bytes[..<2] == [0x00, 0x0D])
     #expect(stream.bytes[2...] == [UInt8]("Hello, World!".utf8)[...])
@@ -19,7 +20,8 @@ func writerSizedByIncludingHeader() async throws {
         sizedBy: UInt16.self,
         includingHeader: true
     ) { stream in
-        return try await stream.write("Hello, World!")
+        // FIXME: Thrown expression type 'any Error' cannot be converted to error type 'StreamError'
+        return try! await stream.write("Hello, World!")
     }
     #expect(stream.bytes[..<2] == [0x00, 0x0F])
     #expect(stream.bytes[2...] == [UInt8]("Hello, World!".utf8)[...])

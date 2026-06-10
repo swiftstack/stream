@@ -4,7 +4,7 @@ extension TestStream {
     func write(
         from array: [Int],
         byteCount: Int
-    ) throws -> Int {
+    ) throws(StreamError) -> Int {
         var array = array.map(UInt8.init)
         return write(from: &array, byteCount: byteCount)
     }
@@ -14,7 +14,7 @@ extension MemoryStream {
     func write(
         from array: [Int],
         byteCount: Int
-    ) throws -> Int {
+    ) throws(StreamError) -> Int {
         var array = array.map(UInt8.init)
         return try write(from: &array, byteCount: byteCount)
     }

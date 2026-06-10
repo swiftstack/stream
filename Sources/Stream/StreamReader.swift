@@ -4,44 +4,44 @@ public enum PredicateMode {
 }
 
 public protocol StreamReader: AnyObject {
-    func cache(count: Int) async throws -> Bool
+    func cache(count: Int) async throws(StreamError) -> Bool
 
-    func peek() async throws -> UInt8
+    func peek() async throws(StreamError) -> UInt8
 
     func peek<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) async throws -> T
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) async throws(StreamError) -> T
 
-    func read<T: FixedWidthInteger>(_ type: T.Type) async throws -> T
+    func read<T: FixedWidthInteger>(_ type: T.Type) async throws(StreamError) -> T
 
     func read<T>(
         count: Int,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) async throws -> T
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) async throws(StreamError) -> T
 
     func read<T>(
         mode: PredicateMode,
         while predicate: (UInt8) -> Bool,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) async throws -> T
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) async throws(StreamError) -> T
 
-    func consume(count: Int) async throws
+    func consume(count: Int) async throws(StreamError)
 
-    func consume(_ byte: UInt8) async throws -> Bool
+    func consume(_ byte: UInt8) async throws(StreamError) -> Bool
 
     func consume(
         mode: PredicateMode,
         while predicate: (UInt8) -> Bool
-    ) async throws
+    ) async throws(StreamError)
 }
 
 extension StreamReader {
     @inline(__always)
     public func read<T>(
         until byte: UInt8,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) async throws -> T {
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) async throws(StreamError) -> T {
         return try await read(
             mode: .strict,
             while: { $0 != byte },
@@ -50,20 +50,20 @@ extension StreamReader {
 
     @inline(__always)
     public func readUntilEnd<T>(
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) async throws -> T {
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) async throws(StreamError) -> T {
         return try await read(
             mode: .untilEnd,
             while: { _ in true },
             body: body)
     }
 
-    public func consume(until byte: UInt8) async throws {
+    public func consume(until byte: UInt8) async throws(StreamError) {
         try await consume(mode: .strict, while: { $0 != byte })
     }
 
     @inlinable
-    public func consume<T>(sequence bytes: T) async throws -> Bool
+    public func consume<T>(sequence bytes: T) async throws(StreamError) -> Bool
         where T: Collection, T.Element == UInt8
     {
         guard try await cache(count: bytes.count) else {
@@ -77,12 +77,12 @@ extension StreamReader {
     }
 
     @inlinable
-    public func consume(set: Set<UInt8>) async throws {
+    public func consume(set: Set<UInt8>) async throws(StreamError) {
         try await consume(while: set.contains)
     }
 
     @inlinable
-    public func next<T: Collection>(is elements: T) async throws -> Bool
+    public func next<T: Collection>(is elements: T) async throws(StreamError) -> Bool
         where T.Element == UInt8
     {
         return try await peek(count: elements.count) { bytes in
@@ -97,13 +97,13 @@ extension StreamReader {
     @inline(__always)
     public func read<T>(
         while predicate: (UInt8) -> Bool,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) async throws -> T {
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) async throws(StreamError) -> T {
         return try await read(mode: .untilEnd, while: predicate, body: body)
     }
 
     @inline(__always)
-    public func consume(while predicate: (UInt8) -> Bool) async throws {
+    public func consume(while predicate: (UInt8) -> Bool) async throws(StreamError) {
         try await consume(mode: .untilEnd, while: predicate)
     }
 }
@@ -111,12 +111,12 @@ extension StreamReader {
 // MARK: [UInt8]
 
 extension StreamReader {
-    public func read(until byte: UInt8) async throws -> [UInt8] {
+    public func read(until byte: UInt8) async throws(StreamError) -> [UInt8] {
         return try await read(until: byte, body: [UInt8].init)
     }
 
     @inlinable
-    public func read(count: Int) async throws -> [UInt8] {
+    public func read(count: Int) async throws(StreamError) -> [UInt8] {
         return try await read(count: count, body: [UInt8].init)
     }
 
@@ -124,7 +124,7 @@ extension StreamReader {
     public func read(
         mode: PredicateMode = .untilEnd,
         while predicate: (UInt8) -> Bool
-    ) async throws -> [UInt8] {
+    ) async throws(StreamError) -> [UInt8] {
         return try await read(mode: mode, while: predicate, body: [UInt8].init)
     }
 }
@@ -133,14 +133,14 @@ extension StreamReader {
 
 extension StreamReader {
     @usableFromInline
-    func consumeLineEnd() async throws {
+    func consumeLineEnd() async throws(StreamError) {
         _ = try? await consume(.cr)
         _ = try await consume(.lf)
     }
 
     @inlinable
     public func readLine<T>(
-        body: (UnsafeRawBufferPointer) throws -> T
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
     ) async -> T? {
         do {
             let result: T = try await read(
@@ -156,12 +156,12 @@ extension StreamReader {
     }
 
     @inlinable
-    public func readLine() async throws -> String? {
+    public func readLine() async throws(StreamError) -> String? {
         return try await readLine(as: UTF8.self)
     }
 
     @inlinable
-    public func readLine<T>(as encoding: T.Type) async throws -> String?
+    public func readLine<T>(as encoding: T.Type) async throws(StreamError) -> String?
         where T: Unicode.Encoding
     {
         return await readLine { bytes in

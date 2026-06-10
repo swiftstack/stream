@@ -14,7 +14,7 @@ public class BufferedStream<BaseStream: Stream>: Stream {
     public func read(
         to buffer: UnsafeMutableRawPointer,
         byteCount: Int
-    ) async throws -> Int {
+    ) async throws(StreamError) -> Int {
         return try await inputStream.read(to: buffer, byteCount: byteCount)
     }
 
@@ -22,12 +22,12 @@ public class BufferedStream<BaseStream: Stream>: Stream {
     public func write(
         from buffer: UnsafeRawPointer,
         byteCount: Int
-    ) async throws -> Int {
+    ) async throws(StreamError) -> Int {
         return try await outputStream.write(from: buffer, byteCount: byteCount)
     }
 
     @inline(__always)
-    public func flush() async throws {
+    public func flush() async throws(StreamError) {
         try await outputStream.flush()
     }
 }

@@ -30,7 +30,7 @@ extension BufferedOutputStream: OutputStream {
     public func write(
         from buffer: UnsafeRawPointer,
         byteCount: Int
-    ) async throws -> Int {
+    ) async throws(StreamError) -> Int {
         switch available - byteCount {
         // the bytes fit into the buffer
         case 0...:
@@ -65,7 +65,7 @@ extension BufferedOutputStream: OutputStream {
         }
     }
 
-    public func flush() async throws {
+    public func flush() async throws(StreamError) {
         var sent = 0
         while sent < buffered {
             sent += try await baseStream.write(

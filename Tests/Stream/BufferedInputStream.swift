@@ -5,7 +5,7 @@ class TestInputStreamSequence: InputStream {
     func read(
         to buffer: UnsafeMutableRawPointer,
         byteCount: Int
-    ) throws -> Int {
+    ) throws(StreamError) -> Int {
         let buffer = UnsafeMutableRawBufferPointer(
             start: buffer,
             count: byteCount)

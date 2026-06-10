@@ -16,7 +16,7 @@ public class UnsafeRawInputStream: InputStream {
 
     public func read(
         to buffer: UnsafeMutableRawPointer, byteCount: Int
-    ) throws -> Int {
+    ) throws(StreamError) -> Int {
         let count = min(self.count - position, byteCount)
         let source = pointer.advanced(by: position)
         buffer.copyMemory(from: source, byteCount: count)
@@ -39,7 +39,7 @@ public class UnsafeRawOutputStream: OutputStream {
 
     public func write(
         from buffer: UnsafeRawPointer, byteCount: Int
-    ) throws -> Int {
+    ) throws(StreamError) -> Int {
         let count = min(self.count - position, byteCount)
         guard count > 0 else {
             return 0

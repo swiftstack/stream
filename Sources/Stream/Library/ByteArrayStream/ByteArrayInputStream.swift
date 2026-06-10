@@ -15,7 +15,7 @@ public class ByteArrayInputStream: InputStream {
     public func read(
         to pointer: UnsafeMutableRawPointer,
         byteCount: Int
-    ) throws -> Int {
+    ) throws(StreamError) -> Int {
         let count = min(bytes.count - position, byteCount)
         let buffer = UnsafeMutableRawBufferPointer(start: pointer, count: count)
         buffer.copyBytes(from: bytes[position..<position + count])

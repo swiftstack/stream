@@ -71,27 +71,27 @@ func memoryStreamSeek() async throws {
     #expect(stream.remain == 4)
     #expect(stream.count == 4)
 
-    #expect(throws: MemoryStream.Error.invalidSeekOffset) {
+    #expect(throws: StreamError.invalidSeekOffset) {
         try stream.seek(to: -1, from: .begin)
     }
 
-    #expect(throws: MemoryStream.Error.invalidSeekOffset) {
+    #expect(throws: StreamError.invalidSeekOffset) {
         try stream.seek(to: 5, from: .begin)
     }
 
-    #expect(throws: MemoryStream.Error.invalidSeekOffset) {
+    #expect(throws: StreamError.invalidSeekOffset) {
         try stream.seek(to: -1, from: .current)
     }
 
-    #expect(throws: MemoryStream.Error.invalidSeekOffset) {
+    #expect(throws: StreamError.invalidSeekOffset) {
         try stream.seek(to: 5, from: .current)
     }
 
-    #expect(throws: MemoryStream.Error.invalidSeekOffset) {
+    #expect(throws: StreamError.invalidSeekOffset) {
         try stream.seek(to: 1, from: .end)
     }
 
-    #expect(throws: MemoryStream.Error.invalidSeekOffset) {
+    #expect(throws: StreamError.invalidSeekOffset) {
         try stream.seek(to: -5, from: .end)
     }
 }
@@ -195,7 +195,7 @@ func memoryStreamCapacity() async throws {
     let data: [UInt8] = [1, 2, 3, 4]
     _ = try stream.write(from: data, byteCount: 2)
 
-    #expect(throws: MemoryStream.Error.notEnoughSpace) {
+    #expect(throws: StreamError.notEnoughSpace) {
         try stream.write(from: data, byteCount: 4)
     }
 }
@@ -234,13 +234,13 @@ func memoryStreamTrivial() async throws {
     #expect(try stream.read(UInt32.self) == UInt32.max)
     #expect(try stream.read(UInt64.self) == UInt64.max)
 
-    #expect(throws: MemoryStream.Error.insufficientData) {
+    #expect(throws: StreamError.insufficientData) {
         try stream.read(Int.self)
     }
 
     try stream.write(UInt32.max)
     try stream.seek(to: -MemoryLayout<UInt32>.size, from: .end)
-    #expect(throws: MemoryStream.Error.insufficientData) {
+    #expect(throws: StreamError.insufficientData) {
         try stream.read(UInt64.self)
     }
 }

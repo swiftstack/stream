@@ -31,8 +31,8 @@ extension StreamReader {
     @inline(__always)
     public func read<T>(
         allowedBytes: AllowedBytes,
-        body: (UnsafeRawBufferPointer) throws -> T
-    ) async throws -> T {
+        body: (UnsafeRawBufferPointer) throws(StreamError) -> T
+    ) async throws(StreamError) -> T {
         let buffer = allowedBytes.buffer
         return try await read(
             mode: .untilEnd,
@@ -41,7 +41,7 @@ extension StreamReader {
     }
 
     @inline(__always)
-    public func read(allowedBytes: AllowedBytes) async throws -> [UInt8] {
+    public func read(allowedBytes: AllowedBytes) async throws(StreamError) -> [UInt8] {
         let buffer = allowedBytes.buffer
         return try await read(while: { buffer[Int($0)] })
     }

@@ -12,7 +12,7 @@ private class TestStreamWithLimit: InputStream {
     func read(
         to buffer: UnsafeMutableRawPointer,
         byteCount: Int
-    ) throws -> Int {
+    ) throws(StreamError) -> Int {
         var byteCount = byteCount
         if let limit = limit {
             byteCount = min(limit, byteCount)
