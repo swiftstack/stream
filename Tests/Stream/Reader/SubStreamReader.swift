@@ -3,10 +3,9 @@ import Testing
 
 @Test("SubStreamReader withSubStreamReader(limitedBy:)")
 func limitedBy() async throws {
-    let stream = ByteArrayInputStream("Hello, World!") as any StreamReader
+    let stream = MemoryStream("Hello, World!") as any StreamReader
     let hello = try await stream.withSubStreamReader(limitedBy: 5) { stream in
-        // FIXME: Thrown expression type 'any Error' cannot be converted to error type 'StreamError'
-        return try! await stream.readUntilEnd(as: String.self)
+        return try await stream.readUntilEnd(as: String.self)
     }
     try await stream.consume(count: 2)
     let world = try await stream.readUntilEnd(as: String.self)
@@ -17,10 +16,9 @@ func limitedBy() async throws {
 @Test("SubStreamReader withSubStreamReader(sizedBy:)")
 func readerSizedBy() async throws {
     let bytes = [0x00, 0x05] + [UInt8]("Hello, World!".utf8)
-    let stream = ByteArrayInputStream(bytes) as any StreamReader
+    let stream = MemoryStream(bytes) as any StreamReader
     let hello = try await stream.withSubStreamReader(sizedBy: UInt16.self) {
-        // FIXME: Thrown expression type 'any Error' cannot be converted to error type 'StreamError'
-        return try! await $0.readUntilEnd(as: String.self)
+        return try await $0.readUntilEnd(as: String.self)
     }
     try await stream.consume(count: 2)
     let world = try await stream.readUntilEnd(as: String.self)
@@ -31,13 +29,12 @@ func readerSizedBy() async throws {
 @Test("SubStreamReader withSubStreamReader(sizedBy:includingHeader:)")
 func sizedByIncludingHeader() async throws {
     let bytes = [0x00, 0x07] + [UInt8]("Hello, World!".utf8)
-    let stream = ByteArrayInputStream(bytes) as any StreamReader
+    let stream = MemoryStream(bytes) as any StreamReader
     let hello = try await  stream.withSubStreamReader(
         sizedBy: UInt16.self,
         includingHeader: true
     ) { stream in
-        // FIXME: Thrown expression type 'any Error' cannot be converted to error type 'StreamError'
-        return try! await stream.readUntilEnd(as: String.self)
+        return try await stream.readUntilEnd(as: String.self)
     }
     try await stream.consume(count: 2)
     let world = try await stream.readUntilEnd(as: String.self)

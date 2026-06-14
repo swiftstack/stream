@@ -1,33 +1,22 @@
-public protocol SubStreamReader: StreamReader {
-    var limit: Int { get }
-    var isEmpty: Bool { get }
-}
-
-extension ByteArrayInputStream: SubStreamReader {
-    public var limit: Int {
-        return bytes.count
-    }
-}
-
 extension StreamReader {
     public func withSubStreamReader<Size: FixedWidthInteger, Result>(
         sizedBy type: Size.Type,
         includingHeader: Bool = false,
-        body: (SubStreamReader) async throws(StreamError) -> Result
-    ) async throws(StreamError) -> Result {
+        body: (StreamReader) async throws -> Result
+    ) async throws -> Result {
         let length = includingHeader
             ? Int(try await read(type)) - MemoryLayout<Size>.size
             : Int(try await read(type))
         return try await withSubStreamReader(limitedBy: length, body: body)
     }
 
+    // TODO: optimize
     public func withSubStreamReader<Result>(
         limitedBy limit: Int,
-        body: (SubStreamReader) async throws(StreamError) -> Result
-    ) async throws(StreamError) -> Result {
-        // FIXME: [Concurrency] optimize
+        body: (StreamReader) async throws -> Result
+    ) async throws -> Result {
         let bytes = try await read(count: limit)
-        let stream = ByteArrayInputStream(bytes)
+        let stream = MemoryStream(bytes)
         return try await body(stream)
     }
 }

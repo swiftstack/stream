@@ -5,7 +5,7 @@ class TestInputStreamSequence: InputStream {
     func read(
         to buffer: UnsafeMutableRawPointer,
         byteCount: Int
-    ) throws(StreamError) -> Int {
+    ) throws -> Int {
         let buffer = UnsafeMutableRawBufferPointer(
             start: buffer,
             count: byteCount)
@@ -59,7 +59,7 @@ func bufferedInputStream() async throws {
 
 @Test("BufferedInputStream default capacity")
 func bufferedInputStreamDefaultCapacity() async throws {
-    let stream = BufferedInputStream(baseStream: ByteArrayInputStream([]))
+    let stream = BufferedInputStream(baseStream: MemoryStream([]))
     #expect(stream.allocated == 256)
     #expect(stream.buffered == 0)
 }

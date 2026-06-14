@@ -4,7 +4,7 @@ import Testing
 @Test("StreamReader readUntilEnd()")
 func untilEnd() async throws {
     let helloBytes = [UInt8]("Hello, World!".utf8)
-    let stream = ByteArrayInputStream(helloBytes)
+    let stream = MemoryStream(helloBytes)
     let bytes = try await stream.readUntilEnd()
     #expect(bytes == helloBytes)
 }
@@ -13,7 +13,7 @@ func untilEnd() async throws {
 func untilEndAsString() async throws {
     let helloString = "Hello, World!"
     let helloBytes = [UInt8](helloString.utf8)
-    let stream = ByteArrayInputStream(helloBytes)
+    let stream = MemoryStream(helloBytes)
     let string = try await stream.readUntilEnd(as: String.self)
     #expect(string == helloString)
 }
@@ -21,7 +21,7 @@ func untilEndAsString() async throws {
 @Test("StreamReader readLine()")
 func readLine() async throws {
     let lines = "Hello, World!\r\nHello, World!\r\n"
-    let stream = ByteArrayInputStream([UInt8](lines.utf8))
+    let stream = MemoryStream(lines)
 
     #expect(try await stream.readLine() == "Hello, World!")
     #expect(try await stream.readLine() == "Hello, World!")

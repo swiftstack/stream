@@ -62,7 +62,7 @@ func bufferedOutputStream() async throws {
 
 @Test("BufferedOutputStream default capacity")
 func bufferedOutputStreamDefaultCapacity() async throws {
-    let stream = BufferedOutputStream(baseStream: ByteArrayOutputStream())
+    let stream = BufferedOutputStream(baseStream: MemoryStream())
     #expect(stream.allocated == 256)
     #expect(stream.buffered == 0)
 }

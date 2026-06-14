@@ -88,7 +88,7 @@ extension BufferedInputStream: InputStream {
     public func read(
         to buffer: UnsafeMutableRawPointer,
         byteCount: Int
-    ) async throws(StreamError) -> Int {
+    ) async throws -> Int {
         switch buffered - byteCount {
 
         // we have buffered more than requested
@@ -144,7 +144,7 @@ extension BufferedInputStream: InputStream {
 }
 
 extension BufferedInputStream: Seekable where BaseStream: Seekable {
-    public func seek(to offset: Int, from origin: SeekOrigin) async throws(StreamError) {
+    public func seek(to offset: Int, from origin: SeekOrigin) async throws {
         switch origin {
         case .current where offset == 0:
             return
@@ -158,7 +158,7 @@ extension BufferedInputStream: Seekable where BaseStream: Seekable {
 }
 
 extension BufferedOutputStream: Seekable where BaseStream: Seekable {
-    public func seek(to offset: Int, from origin: SeekOrigin) async throws(StreamError) {
+    public func seek(to offset: Int, from origin: SeekOrigin) async throws {
         switch origin {
         case .current where offset == 0:
             return
@@ -170,7 +170,7 @@ extension BufferedOutputStream: Seekable where BaseStream: Seekable {
 }
 
 extension BufferedStream: Seekable where BaseStream: Seekable {
-    public func seek(to offset: Int, from origin: SeekOrigin) async throws(StreamError) {
+    public func seek(to offset: Int, from origin: SeekOrigin) async throws {
         try await inputStream.seek(to: offset, from: origin)
         try await outputStream.seek(to: offset, from: origin)
     }

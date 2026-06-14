@@ -1,28 +1,32 @@
 import Testing
 @testable import Stream
 
-// FIXME: [Concurrency] crash on m1
 @Test("SubStreamWriter withSubStreamWriter(sizedBy:)")
 func writerSizedBy() async throws {
-    let stream = ByteArrayOutputStream()
+    let message = "Hello, World!"
+    let stream = MemoryStream(
+        capacity: message.count + MemoryLayout<UInt16>.size
+    )
     try await stream.withSubStreamWriter(sizedBy: UInt16.self) { stream in
-        // FIXME: Thrown expression type 'any Error' cannot be converted to error type 'StreamError'
-        return try! await stream.write("Hello, World!")
+        try await stream.write(message)
     }
-    #expect(stream.bytes[..<2] == [0x00, 0x0D])
-    #expect(stream.bytes[2...] == [UInt8]("Hello, World!".utf8)[...])
+    #expect(stream.buffer[..<2].elementsEqual([0x00, 0x0D]))
+    #expect(stream.buffer[2...].elementsEqual(message.utf8))
+    print([UInt8](stream.buffer[2...]))
 }
 
 @Test("SubStreamWriter withSubStreamWriter(sizedBy:includingHeader:)")
 func writerSizedByIncludingHeader() async throws {
-    let stream = ByteArrayOutputStream()
+    let message = "Hello, World!"
+    let stream = MemoryStream(
+        capacity: message.count + MemoryLayout<UInt16>.size
+    )
     try await stream.withSubStreamWriter(
         sizedBy: UInt16.self,
         includingHeader: true
     ) { stream in
-        // FIXME: Thrown expression type 'any Error' cannot be converted to error type 'StreamError'
-        return try! await stream.write("Hello, World!")
+        try await stream.write(message)
     }
-    #expect(stream.bytes[..<2] == [0x00, 0x0F])
-    #expect(stream.bytes[2...] == [UInt8]("Hello, World!".utf8)[...])
+    #expect(stream.buffer[..<2].elementsEqual([0x00, 0x0F]))
+    #expect(stream.buffer[2...].elementsEqual(message.utf8))
 }

@@ -12,7 +12,7 @@ private class TestStreamWithLimit: InputStream {
     func read(
         to buffer: UnsafeMutableRawPointer,
         byteCount: Int
-    ) throws(StreamError) -> Int {
+    ) throws -> Int {
         var byteCount = byteCount
         if let limit = limit {
             byteCount = min(limit, byteCount)
@@ -364,7 +364,7 @@ func bufferedStreamReaderConsumeUntil() async throws {
 
 @Test("BufferedStreamReader consume empty")
 func bufferedStreamReaderConsumeEmpty() async throws {
-    let stream = BufferedInputStream(baseStream: ByteArrayInputStream([]))
+    let stream = BufferedInputStream(baseStream: MemoryStream([]))
     await #expect(throws: StreamError.insufficientData) {
         try await stream.consume(count: 1)
     }
@@ -385,7 +385,7 @@ func bufferedStreamReaderFeedLessThanReadCount() async throws {
 @Test("BufferedStreamReader advance position before callback")
 func bufferedStreamReaderAdvancePositionBeforeCallback() async throws {
     let stream = BufferedInputStream(
-        baseStream: ByteArrayInputStream([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]))
+        baseStream: MemoryStream([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]))
     try await stream.readUntilEnd { _ in
         #expect(stream.readPosition == stream.writePosition)
     }
@@ -394,7 +394,9 @@ func bufferedStreamReaderAdvancePositionBeforeCallback() async throws {
 @Test("BufferedStreamReader readLine()")
 func bufferedStreamReaderReaderReadLine() async throws {
     let stream = BufferedInputStream(
-        baseStream: ByteArrayInputStream([UInt8]("line1\r\nline2\n".utf8)))
-    #expect(try await stream.readLine() == "line1")
-    #expect(try await stream.readLine() == "line2")
+        baseStream: MemoryStream("line1\r\nline2\n"))
+    let line1 = try await stream.readLine()
+    let line2 = try await stream.readLine()
+    #expect(line1 == "line1")
+    #expect(line2 == "line2")
 }

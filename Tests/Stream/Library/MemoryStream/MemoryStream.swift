@@ -28,7 +28,7 @@ func memoryStreamInitialSize() async throws {
 }
 
 @Test("MemoryStream write empty array")
-func memoryStreamWriteEmptyArrap() async throws {
+func memoryStreamWriteEmptyArray() async throws {
     let stream = MemoryStream()
     let written = try stream.write(from: [UInt8](), byteCount: 0)
     #expect(written == 0)
@@ -45,31 +45,26 @@ func memoryStreamReadFromEmptyStream() async throws {
 
 @Test("MemoryStream seek")
 func memoryStreamSeek() async throws {
-    let stream = MemoryStream()
+    let stream = MemoryStream(capacity: 4)
     #expect((stream as Any) is any Seekable)
     #expect(stream.position == 0)
-    #expect(stream.remain == 0)
-    #expect(stream.count == 0)
+    #expect(stream.remain == 4)
 
     _ = try stream.write(from: [1, 2, 3, 4], byteCount: 4)
     #expect(stream.position == 4)
     #expect(stream.remain == 0)
-    #expect(stream.count == 4)
 
     try stream.seek(to: 1, from: .begin)
     #expect(stream.position == 1)
     #expect(stream.remain == 3)
-    #expect(stream.count == 4)
 
     try stream.seek(to: 2, from: .current)
     #expect(stream.position == 3)
     #expect(stream.remain == 1)
-    #expect(stream.count == 4)
 
     try stream.seek(to: -4, from: .end)
     #expect(stream.position == 0)
     #expect(stream.remain == 4)
-    #expect(stream.count == 4)
 
     #expect(throws: StreamError.invalidSeekOffset) {
         try stream.seek(to: -1, from: .begin)
@@ -98,7 +93,7 @@ func memoryStreamSeek() async throws {
 
 @Test("MemoryStream write")
 func memoryStreamWrite() async throws {
-    let stream = MemoryStream()
+    let stream = MemoryStream(capacity: 4)
     let data: [UInt8] = [1, 2, 3, 4]
 
     let written = try stream.write(from: data, byteCount: 4)
@@ -118,7 +113,7 @@ func memoryStreamWrite() async throws {
     _ = try stream.read(to: &buffer, byteCount: 2)
     #expect(buffer == [1, 2, 0, 0])
 
-    try stream.seek(to: 0, from: .end)
+    try stream.seek(to: -2, from: .end)
     let writtenLast = try stream.write(from: [UInt8](data[2...]), byteCount: 2)
     #expect(writtenLast == 2)
     try stream.seek(to: -2, from: .end)
@@ -128,7 +123,7 @@ func memoryStreamWrite() async throws {
 
 @Test("MemoryStream read")
 func memoryStreamRead() async throws {
-    let stream = MemoryStream()
+    let stream = MemoryStream(capacity: 4)
     let data: [UInt8] = [1, 2, 3, 4]
     _ = try stream.write(from: data, byteCount: 4)
 
@@ -139,7 +134,6 @@ func memoryStreamRead() async throws {
     #expect(buffer == data)
     #expect(stream.position == 4)
     #expect(stream.remain == 0)
-    #expect(stream.count == 4)
 
     buffer = [UInt8](repeating: 0, count: 4)
     try stream.seek(to: 0, from: .begin)
@@ -148,13 +142,11 @@ func memoryStreamRead() async throws {
     #expect(buffer == [1, 2, 0, 0])
     #expect(stream.position == 2)
     #expect(stream.remain == 2)
-    #expect(stream.count == 4)
 
     #expect(try stream.read(to: &buffer[2], byteCount: 2) == 2)
     #expect(buffer == data)
     #expect(stream.position == 4)
     #expect(stream.remain == 0)
-    #expect(stream.count == 4)
 }
 
 @Test("MemoryStream reallocate")
@@ -168,25 +160,22 @@ func memoryStreamReallocate() async throws {
     _ = try stream.write(from: data, byteCount: data.count)
     #expect(stream.capacity == 256)
     #expect(stream.position == 8)
-    #expect(stream.remain == 0)
-    #expect(stream.count == 8)
+    #expect(stream.remain == 248)
 
     let data300 = [UInt8](repeating: 111, count: 300)
 
     _ = try stream.write(from: data300, byteCount: data300.count)
-    #expect(stream.capacity == 512)
+    #expect(stream.capacity == 1024)
     #expect(stream.position == 308)
-    #expect(stream.remain == 0)
-    #expect(stream.count == 308)
+    #expect(stream.remain == 716)
 
     var buffer = [UInt8](repeating: 0, count: 308)
     try stream.seek(to: 0, from: .begin)
     _ = try stream.read(to: &buffer, byteCount: buffer.count)
     #expect(buffer == [1, 2, 3, 4, 5, 6, 7, 8] + data300)
-    #expect(stream.capacity == 512)
+    #expect(stream.capacity == 1024)
     #expect(stream.position == 308)
-    #expect(stream.remain == 0)
-    #expect(stream.count == 308)
+    #expect(stream.remain == 716)
 }
 
 @Test("MemoryStream capacity")
@@ -196,7 +185,7 @@ func memoryStreamCapacity() async throws {
     _ = try stream.write(from: data, byteCount: 2)
 
     #expect(throws: StreamError.notEnoughSpace) {
-        try stream.write(from: data, byteCount: 4)
+        try stream.write(data)
     }
 }
 
@@ -233,16 +222,6 @@ func memoryStreamTrivial() async throws {
     #expect(try stream.read(UInt16.self) == UInt16.max)
     #expect(try stream.read(UInt32.self) == UInt32.max)
     #expect(try stream.read(UInt64.self) == UInt64.max)
-
-    #expect(throws: StreamError.insufficientData) {
-        try stream.read(Int.self)
-    }
-
-    try stream.write(UInt32.max)
-    try stream.seek(to: -MemoryLayout<UInt32>.size, from: .end)
-    #expect(throws: StreamError.insufficientData) {
-        try stream.read(UInt64.self)
-    }
 }
 
 @Test("MemoryStream buffer")

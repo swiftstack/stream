@@ -3,11 +3,11 @@ import Testing
 
 @Test("BufferedStreamWriter write byte")
 func bufferedStreamWriterWriteByte() async throws {
-    let stream = ByteArrayOutputStream()
+    let stream = MemoryStream()
     let output = BufferedOutputStream(baseStream: stream, capacity: 5)
 
     try await output.write(UInt8(42))
     try await output.flush()
 
-    #expect(stream.bytes == [42])
+    #expect(stream.buffer[..<stream.position].elementsEqual([42]))
 }
