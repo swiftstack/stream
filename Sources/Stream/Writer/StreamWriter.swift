@@ -19,7 +19,3 @@ extension StreamWriter {
         try await write([UInt8](string.utf8))
     }
 }
-
-public protocol StreamWritable {
-    func write(to stream: StreamWriter) async throws
-}

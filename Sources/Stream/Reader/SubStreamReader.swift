@@ -1,8 +1,9 @@
 extension StreamReader {
+    // FIXME: Generalize SubStream type
     public func withSubStreamReader<Size: FixedWidthInteger, Result>(
         sizedBy type: Size.Type,
         includingHeader: Bool = false,
-        body: (StreamReader) async throws -> Result
+        body: (MemoryStream) async throws -> Result
     ) async throws -> Result {
         let length = includingHeader
             ? Int(try await read(type)) - MemoryLayout<Size>.size
@@ -10,10 +11,10 @@ extension StreamReader {
         return try await withSubStreamReader(limitedBy: length, body: body)
     }
 
-    // TODO: optimize
+    // FIXME: Generalize SubStream type
     public func withSubStreamReader<Result>(
         limitedBy limit: Int,
-        body: (StreamReader) async throws -> Result
+        body: (MemoryStream) async throws -> Result
     ) async throws -> Result {
         let bytes = try await read(count: limit)
         let stream = MemoryStream(bytes)

@@ -40,6 +40,30 @@ public final class MemoryStream {
     deinit {
         buffer.deallocate()
     }
+
+    public func withUnsafeBufferPointer<R>(
+        _ body: (UnsafeRawBufferPointer) throws -> R
+    ) rethrows -> R {
+        try body(.init(rebasing: buffer[..<position]))
+    }
+
+    public func withUnsafeBufferPointer<R>(
+        _ body: (UnsafeRawBufferPointer) async throws -> R
+    ) async rethrows -> R {
+        try await body(.init(rebasing: buffer[..<position]))
+    }
+
+    public func withUnsafeMutableBufferPointer<R>(
+        _ body: (UnsafeMutableRawBufferPointer) throws -> R
+    ) rethrows -> R {
+        try body(.init(rebasing: buffer[..<position]))
+    }
+
+    public func withUnsafeMutableBufferPointer<R>(
+        _ body: (UnsafeMutableRawBufferPointer) async throws -> R
+    ) async rethrows -> R {
+        try await body(.init(rebasing: buffer[..<position]))
+    }
 }
 
 extension MemoryStream: InputStream {

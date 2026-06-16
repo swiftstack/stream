@@ -1,9 +1,9 @@
 public protocol StreamReadable {
-    init(from stream: StreamReader) throws
+    init<T: StreamReader>(from stream: T) async throws
 }
 
-extension StreamReader {
-    func read<T: StreamReadable>(_ type: T.Type) throws -> T {
-        return try T(from: self)
+public extension StreamReader {
+    func read<T: StreamReadable>(_ type: T.Type) async throws -> T {
+        return try await T(from: self)
     }
 }
