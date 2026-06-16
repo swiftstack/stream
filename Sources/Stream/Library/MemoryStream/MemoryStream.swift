@@ -76,7 +76,7 @@ extension MemoryStream: OutputStream {
         return byteCount
     }
 
-    fileprivate func reallocate(reserving byteCount: Int) {
+    func reallocate(reserving byteCount: Int) {
         let byteCount = nextSize(reserving: byteCount)
         let buffer = UnsafeMutableRawBufferPointer
             .allocate(

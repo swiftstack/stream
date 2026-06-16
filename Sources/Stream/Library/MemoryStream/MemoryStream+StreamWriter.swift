@@ -1,5 +1,8 @@
 extension MemoryStream: StreamWriter {
     public func write(_ byte: UInt8) throws {
+        if remain <= 0 {
+            reallocate(reserving: 1)
+        }
         guard remain > 0 else {
             throw StreamError.notEnoughSpace
         }

@@ -236,3 +236,12 @@ func memoryStreamBuffer() async throws {
     _ = try stream.read(to: &buffer, byteCount: 4)
     #expect([1, 2, 3, 4] == [UInt8](stream.buffer))
 }
+
+@Test("MemoryStream byte")
+func memoryStreamByte() async throws {
+    let stream = MemoryStream(reservingCapacity: 0)
+
+    #expect(throws: Never.self) {
+        _ = try stream.write(UInt8(42))
+    }
+}
