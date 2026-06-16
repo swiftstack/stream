@@ -21,3 +21,15 @@ extension StreamReader {
         return try await body(stream)
     }
 }
+
+
+extension StreamReader {
+    // FIXME: Generalize SubStream type
+    public func withSubStreamReader<Size: LengthHeader, Result>(
+        sizedBy type: Size.Type,
+        body: (MemoryStream) async throws -> Result
+    ) async throws -> Result {
+        let type = try await type.init(from: self)
+        return try await withSubStreamReader(limitedBy: type.value, body: body)
+    }
+}

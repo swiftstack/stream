@@ -13,5 +13,20 @@ extension StreamWriter {
         try await write(sizeHeader)
         try await write(output.buffer.baseAddress!, byteCount: output.position)
     }
+
+    // FIXME: Generalize SubStream type
+    public func withSubStreamWriter<Size: LengthHeader>(
+        sizedBy type: Size.Type,
+        includingHeader: Bool = false,
+        task: (MemoryStream) async throws -> Void
+    ) async throws {
+        let output = MemoryStream()
+        try await task(output)
+        let length = type.init(output.position)
+        try await length.write(to: self)
+        try await output.withUnsafeBufferPointer { buffer in
+            try await write(buffer)
+        }
+    }
 }
 
